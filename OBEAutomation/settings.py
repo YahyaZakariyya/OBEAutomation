@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'OBE.apps.ObeConfig',
+    # django extensions
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
