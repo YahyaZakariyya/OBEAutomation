@@ -37,9 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'OBE.apps.ObeConfig',
     # django extensions
-    'django_extensions'
+    'django_extensions',
+
+    # custom apps
+    # 'OBE.apps.ObeConfig',
+    'obesystem.apps.ObesystemConfig',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'obesystem.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
