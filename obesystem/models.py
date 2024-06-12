@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
@@ -33,12 +39,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.role})"
 
-class Department(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
 class Program(models.Model):
     name = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -66,6 +66,7 @@ class Section(models.Model):
 
 class ProgramLearningOutcome(models.Model):
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='program_outcomes')
+    name = models.CharField(max_length=100, default='Unnamed PLO')
     description = models.TextField()
 
     def __str__(self):
@@ -73,6 +74,7 @@ class ProgramLearningOutcome(models.Model):
 
 class CourseLearningOutcome(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_outcomes')
+    name = models.CharField(max_length=100, default='Unnamed CLO')
     description = models.TextField()
     related_plo = models.ForeignKey(ProgramLearningOutcome, on_delete=models.CASCADE, related_name='related_clos')
 
@@ -83,7 +85,7 @@ class Assessment(models.Model):
     title = models.CharField(max_length=100)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assessments')
     date = models.DateField()
-    total_marks = models.IntegerField()
+    weightage = models.FloatField(default=0, help_text="Max weightage varies by assessment type.")
 
     ASSESSMENT_TYPES = [
         ('quiz', 'Quiz'),
@@ -100,7 +102,7 @@ class Question(models.Model):
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     marks = models.IntegerField()
-
+    weightage = models.FloatField(default=0, help_text="Maximum weightage is 10.")
     clo = models.ForeignKey(CourseLearningOutcome, on_delete=models.CASCADE, related_name='questions')
 
     def __str__(self):
@@ -112,3 +114,7 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f"{self.student.username} enrolled in {self.section.course.name} - {self.section.semester}"
+
+
+class Report(models.Model):
+    pass

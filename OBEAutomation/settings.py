@@ -37,12 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     # django extensions
     'django_extensions',
 
     # custom apps
-    # 'OBE.apps.ObeConfig',
-    'obesystem.apps.ObesystemConfig',
+    # 'obesystem.apps.ObesystemConfig',
+    'obesystem',
 ]
 
 MIDDLEWARE = [

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Department, Program, Course, Section, 
                      ProgramLearningOutcome, CourseLearningOutcome, 
@@ -53,15 +54,50 @@ class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_filter = ('course',)
     search_fields = ('description',)
 
+class QuestionInline(admin.TabularInline):
+    model = Question
+    extra = 3
+
 class AssessmentAdmin(admin.ModelAdmin):
     list_display = ('title', 'section', 'date', 'type')
     list_filter = ('section', 'type')
     search_fields = ('title',)
+    inlines = [QuestionInline]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'section' and not request.user.is_superuser:
+            kwargs['queryset'] = Section.objects.filter(faculty=request.user)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        field = super(AssessmentAdmin, self).formfield_for_dbfield(db_field, request, **kwargs)
+        if db_field.name == 'weightage':
+            field.help_text = "Max weightage: 2.5 for Quizzes/Assignments, 30 for Midterms, 50 for Finals."
+        return field
+
+    def save_model(self, request, obj, form, change):
+        if obj.type == 'quiz' or obj.type == 'assignment':
+            max_weightage = 2.5
+        elif obj.type == 'midterm':
+            max_weightage = 30
+        elif obj.type == 'final':
+            max_weightage = 50
+        else:
+            max_weightage = 0  # default case, though all types should be covered
+
+        if obj.weightage > max_weightage:
+            raise ValidationError(f"The maximum weightage for {obj.type} is {max_weightage}.")
+        super().save_model(request, obj, form, change)
 
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'text', 'marks', 'clo')
     list_filter = ('assessment',)
     search_fields = ('text',)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'assessment' and not request.user.is_superuser:
+            kwargs['queryset'] = Assessment.objects.filter(section__faculty=request.user)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class EnrollmentAdmin(admin.ModelAdmin):
     list_display = ('student', 'section')
