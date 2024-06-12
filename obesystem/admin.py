@@ -44,10 +44,15 @@ class SectionAdmin(admin.ModelAdmin):
             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+class CLOInline(admin.TabularInline):
+    model = CourseLearningOutcome
+    extra = 3
+
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('program', 'description')
     list_filter = ('program',)
     search_fields = ('description',)
+    inlines = [CLOInline]
 
 class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('course', 'description')
@@ -83,7 +88,7 @@ class AssessmentAdmin(admin.ModelAdmin):
         elif obj.type == 'final':
             max_weightage = 50
         else:
-            max_weightage = 0  # default case, though all types should be covered
+            max_weightage = 1  # default case, though all types should be covered
 
         if obj.weightage > max_weightage:
             raise ValidationError(f"The maximum weightage for {obj.type} is {max_weightage}.")
