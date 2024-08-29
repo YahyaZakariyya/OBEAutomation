@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Keep this above 'django.contrib.admin'
+    "jazzmin",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +47,13 @@ INSTALLED_APPS = [
     # 'obesystem.apps.ObesystemConfig',
     'obesystem',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "OBE Automation",
+    "site_header": "OBE Automation",
+    "site_logo": "images/logo.png",  # Path to your new logo
+    "site_icon": "images/logo.png",  # Path to your new logo
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -123,7 +132,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
