@@ -43,14 +43,36 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ('course_id', 'name')
 
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('course', 'faculty', 'semester')
-    list_filter = ('semester', 'course')
-    search_fields = ('course__name',)
+    list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
+    list_filter = ('semester', 'batch', 'year', 'faculty')
+    search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
+    
+    # To show the students field as a dual list box
+    filter_horizontal = ('students',)
+    
+    fieldsets = (
+        (None, {
+            'fields': ('course', 'semester', 'section', 'batch', 'year', 'faculty')
+        }),
+        ('Enrolled Students', {
+            'fields': ('students',),
+        }),
+    )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "faculty" and not request.user.is_superuser:
             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+# class SectionAdmin(admin.ModelAdmin):
+#     list_display = ('course', 'faculty', 'semester')
+#     list_filter = ('semester', 'course')
+#     search_fields = ('course__name',)
+
+#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+#         if db_field.name == "faculty" and not request.user.is_superuser:
+#             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
+#         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class CLOInline(admin.TabularInline):
     model = CourseLearningOutcome
