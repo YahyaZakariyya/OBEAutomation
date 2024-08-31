@@ -1,23 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
-class Department(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
-        ('director', 'Director'),
-        ('head_of_department', 'Head of Department'),
-        ('curriculum_designer', 'Curriculum Designer'),
         ('faculty', 'Faculty Member'),
         ('student', 'Student'),
     )
     role = models.CharField(choices=ROLE_CHOICES, max_length=20, default='student')
-    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Department")
 
     groups = models.ManyToManyField(
         Group,
@@ -41,8 +31,7 @@ class CustomUser(AbstractUser):
 
 class Program(models.Model):
     name = models.CharField(max_length=100)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    hod = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='program_heads')
+    hod = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='program_heads', limit_choices_to={'role': 'faculty'})
 
     def __str__(self):
         return self.name

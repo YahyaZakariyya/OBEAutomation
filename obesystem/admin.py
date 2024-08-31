@@ -1,27 +1,22 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
-from .models import (CustomUser, Department, Program, Course, Section, 
+from .models import (CustomUser, Program, Course, Section, 
                      ProgramLearningOutcome, CourseLearningOutcome, 
                      Assessment, Question, Enrollment)
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('role', 'department',)}),
+        (None, {'fields': ('role',)}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('role', 'department',)}),
+        (None, {'fields': ('role',)}),
     )
-    list_display = ['username', 'email', 'role', 'department', 'is_active']
-
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
+    list_display = ['username', 'email', 'role', 'is_active']
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'department', 'hod')
-    list_filter = ('department',)
+    list_display = ('name', 'hod')
     search_fields = ('name',)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -109,7 +104,6 @@ class EnrollmentAdmin(admin.ModelAdmin):
     search_fields = ('student__username', 'section__course__name')
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Program, ProgramAdmin)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Section, SectionAdmin)
