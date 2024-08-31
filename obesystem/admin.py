@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Program, Course, Section, 
                      ProgramLearningOutcome, CourseLearningOutcome, 
-                     Assessment, Question, Enrollment)
+                     Assessment, Question)
 
 class CustomUserAdmin(UserAdmin):
     # Define the fields to be displayed in the admin panel
@@ -38,9 +38,9 @@ class ProgramAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'program')
+    list_display = ('course_id', 'name', 'program')
     list_filter = ('program',)
-    search_fields = ('code', 'name')
+    search_fields = ('course_id', 'name')
 
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('course', 'faculty', 'semester')
@@ -112,9 +112,6 @@ class QuestionAdmin(admin.ModelAdmin):
             kwargs['queryset'] = Assessment.objects.filter(section__faculty=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-class EnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('student', 'section')
-    search_fields = ('student__username', 'section__course__name')
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Program, ProgramAdmin)
@@ -124,4 +121,3 @@ admin.site.register(ProgramLearningOutcome, ProgramLearningOutcomeAdmin)
 admin.site.register(CourseLearningOutcome, CourseLearningOutcomeAdmin)
 admin.site.register(Assessment, AssessmentAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(Enrollment, EnrollmentAdmin)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
@@ -37,13 +38,17 @@ class Program(models.Model):
         return self.name
 
 class Course(models.Model):
-    code = models.CharField(max_length=10, unique=True)
+    course_id = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
-    credit_hours = models.IntegerField()
+    credit_hours = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(4)
+        ])
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='courses')
 
     def __str__(self):
-        return f"{self.code} - {self.name}"
+        return f"{self.name} - {self.course_id}"
 
 class Section(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
@@ -96,14 +101,3 @@ class Question(models.Model):
 
     def __str__(self):
         return f"{self.text[:50]} - {self.marks} Marks"
-
-class Enrollment(models.Model):
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='enrollments')
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='enrolled_students')
-
-    def __str__(self):
-        return f"{self.student.username} enrolled in {self.section.course.name} - {self.section.semester}"
-
-
-class Report(models.Model):
-    pass
