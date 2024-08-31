@@ -6,14 +6,27 @@ from .models import (CustomUser, Program, Course, Section,
                      Assessment, Question, Enrollment)
 
 class CustomUserAdmin(UserAdmin):
-    model = CustomUser
-    fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('role',)}),
+    # Define the fields to be displayed in the admin panel
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('role',)}),
+
+    # Override the add_fieldsets to remove 'role' from creation form if necessary
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'role'),
+        }),
     )
-    list_display = ['username', 'email', 'role', 'is_active']
+
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering = ('username',)
 
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ('name', 'hod')
