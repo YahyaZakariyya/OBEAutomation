@@ -110,12 +110,21 @@ class Section(models.Model):
         return f"{self.course.name} - {self.semester}"
 
 class ProgramLearningOutcome(models.Model):
+    PLO_CHOICES = [(i, str(i)) for i in range(1, 16)]
+
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='program_outcomes')
-    name = models.CharField(max_length=100, default='Unnamed PLO')
+    PLO = models.PositiveIntegerField(
+        choices=PLO_CHOICES,
+        validators=[MinValueValidator(1)],
+        unique=True
+    )
+    heading = models.CharField(max_length=255)
     description = models.TextField()
 
     def __str__(self):
-        return f"{self.program.name} - PLO"
+        # Truncate the description to 20-25 characters
+        desc_preview = self.description[:25] + ('...' if len(self.description) > 25 else '')
+        return f"PLO {self.PLO}: {self.heading}: {desc_preview}"
 
 class CourseLearningOutcome(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_outcomes')

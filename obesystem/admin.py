@@ -79,7 +79,10 @@ class CLOInline(admin.TabularInline):
     extra = 3
 
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
-    list_display = ('program', 'description')
+    def display_str(self, obj):
+        return str(obj)
+    display_str.short_description = 'PLO Details'
+    list_display = ('program','display_str')
     list_filter = ('program',)
     search_fields = ('description',)
     inlines = [CLOInline]
