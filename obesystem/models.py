@@ -125,15 +125,19 @@ class ProgramLearningOutcome(models.Model):
         # Truncate the description to 20-25 characters
         desc_preview = self.description[:25] + ('...' if len(self.description) > 25 else '')
         return f"PLO {self.PLO}: {self.heading}: {desc_preview}"
-
+    
 class CourseLearningOutcome(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_outcomes')
-    name = models.CharField(max_length=100, default='Unnamed CLO')
+    CLO = models.IntegerField(
+        choices=[(i, str(i)) for i in range(1, 16)],  # Dropdown from 1 to 15
+        validators=[MinValueValidator(1)],
+        unique=True
+    )
     description = models.TextField()
-    related_plo = models.ForeignKey(ProgramLearningOutcome, on_delete=models.CASCADE, related_name='related_clos')
+    mapped_to_PLO = models.ManyToManyField(ProgramLearningOutcome, related_name='related_clos')
 
     def __str__(self):
-        return f"{self.course.name} - CLO"
+        return f"CLO {self.CLO}: {self.description}"
 
 class Assessment(models.Model):
     title = models.CharField(max_length=100)

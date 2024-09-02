@@ -6,7 +6,6 @@ from .models import (CustomUser, Program, Course, Section,
                      Assessment, Question)
 
 class CustomUserAdmin(UserAdmin):
-    # Define the fields to be displayed in the admin panel
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
@@ -15,15 +14,12 @@ class CustomUserAdmin(UserAdmin):
         }),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-
-    # Override the add_fieldsets to remove 'role' from creation form if necessary
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('username', 'password1', 'password2', 'role'),
         }),
     )
-
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
@@ -64,20 +60,6 @@ class SectionAdmin(admin.ModelAdmin):
             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-# class SectionAdmin(admin.ModelAdmin):
-#     list_display = ('course', 'faculty', 'semester')
-#     list_filter = ('semester', 'course')
-#     search_fields = ('course__name',)
-
-#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#         if db_field.name == "faculty" and not request.user.is_superuser:
-#             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
-#         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-class CLOInline(admin.TabularInline):
-    model = CourseLearningOutcome
-    extra = 3
-
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     def display_str(self, obj):
         return str(obj)
@@ -85,12 +67,12 @@ class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('program','display_str')
     list_filter = ('program',)
     search_fields = ('description',)
-    inlines = [CLOInline]
 
 class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('course', 'description')
     list_filter = ('course',)
     search_fields = ('description',)
+    filter_horizontal = ('mapped_to_PLO',)
 
 class QuestionInline(admin.TabularInline):
     model = Question
