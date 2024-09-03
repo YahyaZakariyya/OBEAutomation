@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block content %}
+  <h1>Section: {{ section }}</h1>
+
+  <div class="module">
+    <h2>Details</h2>
+    <table>
+      {% for field in section._meta.fields %}
+        <tr>
+          <th>{{ field.verbose_name }}</th>
+          <td>{{ getattr(section, field.name) }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="module">
+    <h2>Assessments</h2>
+    <a href="{{ add_assessment_url }}" class="button addlink">Add assessment</a>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Weightage</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for assessment in assessments %}
+          <tr>
+            <td>{{ assessment.title }}</td>
+            <td>{{ assessment.get_type_display }}</td>
+            <td>{{ assessment.date }}</td>
+            <td>{{ assessment.weightage }}</td>
+            <td>
+              <a href="{% url 'admin:your_app_assessment_change' assessment.pk %}" class="button">Edit</a>
+              <a href="{% url 'admin:your_app_assessment_delete' assessment.pk %}" class="button deletelink">Delete</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No assessments available.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

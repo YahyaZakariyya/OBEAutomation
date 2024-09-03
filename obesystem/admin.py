@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.urls import path, reverse
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.utils.html import format_html
 from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Program, Course, Section, 
@@ -38,28 +42,76 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ('program',)
     search_fields = ('course_id', 'name')
 
+# class SectionAdmin(admin.ModelAdmin):
+#     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
+#     list_filter = ('semester', 'batch', 'year', 'faculty')
+#     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
+    
+#     # To show the students field as a dual list box
+#     filter_horizontal = ('students',)
+    
+#     fieldsets = (
+#         (None, {
+#             'fields': ('course', 'semester', 'section', 'batch', 'year', 'faculty')
+#         }),
+#         ('Enrolled Students', {
+#             'fields': ('students',),
+#         }),
+#     )
+
+#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+#         if db_field.name == "faculty" and not request.user.is_superuser:
+#             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
+#         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
-    list_filter = ('semester', 'batch', 'year', 'faculty')
+    list_filter = ('semester', 'batch', 'year')
     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
-    
-    # To show the students field as a dual list box
     filter_horizontal = ('students',)
-    
-    fieldsets = (
-        (None, {
-            'fields': ('course', 'semester', 'section', 'batch', 'year', 'faculty')
-        }),
-        ('Enrolled Students', {
-            'fields': ('students',),
-        }),
-    )
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "faculty" and not request.user.is_superuser:
-            kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.is_staff:
+            return qs
+        return qs.filter(faculty=request.user)
 
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]  # All fields read-only for everyone
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to add sections
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to edit sections
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to delete sections
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:section_id>/assessments/', self.admin_site.admin_view(self.assessment_view), name='section_assessments'),
+        ]
+        return custom_urls + urls
+
+    def assessment_view(self, request, section_id):
+        section = Section.objects.get(pk=section_id)
+        assessments = section.assessments.all()
+        context = {
+            'section': section,
+            'assessments': assessments,
+            'add_assessment_url': reverse('admin:your_app_assessment_add') + f'?section={section_id}',
+            'opts': self.model._meta,
+            'has_change_permission': self.has_change_permission(request, section),
+        }
+        return TemplateResponse(request, 'admin/section_assessment_view.html', context)
+
+    def response_change(self, request, obj):
+        if "_continue" in request.POST:
+            return redirect('admin:section_assessments', section_id=obj.pk)
+        return super().response_change(request, obj)
+        
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     def display_str(self, obj):
         return str(obj)
@@ -82,42 +134,51 @@ class AssessmentAdmin(admin.ModelAdmin):
     list_display = ('title', 'section', 'date', 'type')
     list_filter = ('section', 'type')
     search_fields = ('title',)
-    inlines = [QuestionInline]
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'section' and not request.user.is_superuser:
-            kwargs['queryset'] = Section.objects.filter(faculty=request.user)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(section__faculty=request.user)
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
+            return []
+        return [f.name for f in self.model._meta.fields]  # All fields read-only for non-superusers and non-assigned faculty
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
+            return True
+        return False
+
+    def has_add_permission(self, request):
+        if request.user.is_superuser or request.user.role == 'faculty':
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
+            return True
+        return False
+
+    def has_module_permission(self, request):
+        """Hide 'Assessments' from non-superuser users."""
+        return request.user.is_superuser
     
-    def formfield_for_dbfield(self, db_field, request, **kwargs):
-        field = super(AssessmentAdmin, self).formfield_for_dbfield(db_field, request, **kwargs)
-        if db_field.name == 'weightage':
-            field.help_text = "Max weightage: 2.5 for Quizzes/Assignments, 30 for Midterms, 50 for Finals."
-        return field
-
-    def save_model(self, request, obj, form, change):
-        if obj.type == 'quiz' or obj.type == 'assignment':
-            max_weightage = 2.5
-        elif obj.type == 'midterm':
-            max_weightage = 30
-        elif obj.type == 'final':
-            max_weightage = 50
-        else:
-            max_weightage = 1  # default case, though all types should be covered
-
-        if obj.weightage > max_weightage:
-            raise ValidationError(f"The maximum weightage for {obj.type} is {max_weightage}.")
-        super().save_model(request, obj, form, change)
-
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'text', 'marks', 'clo')
     list_filter = ('assessment',)
     search_fields = ('text',)
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'assessment' and not request.user.is_superuser:
-            kwargs['queryset'] = Assessment.objects.filter(section__faculty=request.user)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(assessment__section__faculty=request.user)
+
+    def has_module_permission(self, request):
+        """Restrict direct visibility of Questions to superusers."""
+        return request.user.is_superuser
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
