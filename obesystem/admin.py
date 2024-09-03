@@ -2,8 +2,6 @@ from django.contrib import admin
 from django import forms
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect
-from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Program, Course, Section, 
                      ProgramLearningOutcome, CourseLearningOutcome, 
@@ -76,8 +74,6 @@ class SectionAdmin(admin.ModelAdmin):
         print("Extra context:", extra_context)
 
         return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
-
-
             
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     def display_str(self, obj):
@@ -97,59 +93,55 @@ class QuestionInline(admin.TabularInline):
     model = Question
     extra = 3
 
-class AssessmentAdminForm(forms.ModelForm):
+class AssessmentForm(forms.ModelForm):
     class Meta:
         model = Assessment
-        fields = '__all__'
+        fields = ['title', 'section', 'date', 'weightage', 'type']
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Make section field read-only if section is already set
-        if self.instance and self.instance.pk:
-            self.fields['section'].disabled = True
-        elif 'section' in self.initial:
-            self.fields['section'].queryset = Section.objects.filter(pk=self.initial['section'])
-            self.fields['section'].initial = Section.objects.get(pk=self.initial['section'])
-            self.fields['section'].disabled = True
+        self.user = kwargs.pop('user', None)
+        super(AssessmentForm, self).__init__(*args, **kwargs)
+
+        if self.user is not None:
+            # Superuser can see all sections
+            if self.user.is_superuser:
+                self.fields['section'].queryset = Section.objects.all()
+            else:
+                # Regular faculty member can only see their sections
+                self.fields['section'].queryset = Section.objects.filter(faculty=self.user)
+        print(self.user)
+
+        if 'section' in self.initial:
+            self.fields['section'].widget.attrs['readonly'] = True
+            self.fields['section'].widget.attrs['disabled'] = 'disabled'
 
 class AssessmentAdmin(admin.ModelAdmin):
-    form = AssessmentAdminForm
-    list_display = ('title', 'section', 'date', 'type')
-    list_filter = ('section', 'type', 'date')
-    search_fields = ('title',)
+    form = AssessmentForm
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        if not request.user.is_superuser:
-            form.base_fields['section'].queryset = Section.objects.filter(faculty=request.user)
-        return form
+        form_class = super().get_form(request, obj, **kwargs)
+        # Passing the user through kwargs
+        class FormWithUser(form_class):
+            def __init__(self, *args, **kwargs):
+                kwargs['user'] = request.user
+                super(FormWithUser, self).__init__(*args, **kwargs)
 
-    def add_view(self, request, form_url='', extra_context=None):
-        section_id = request.GET.get('section')
-        if section_id:
-            extra_context = extra_context or {}
-            extra_context['section'] = Section.objects.get(pk=section_id)
-        return super().add_view(request, form_url, extra_context)
+        return FormWithUser
+
+    def get_queryset(self, request):
+        # Superuser can see all assessments
+        if request.user.is_superuser:
+            return super(AssessmentAdmin, self).get_queryset(request)
+        else:
+            # Regular faculty member can only see their assessments
+            qs = super(AssessmentAdmin, self).get_queryset(request)
+            return qs.filter(section__faculty=request.user)
 
     def save_model(self, request, obj, form, change):
-        if not request.user.is_superuser and not change:
-            section_id = request.GET.get('section')
-            if section_id:
-                obj.section = Section.objects.get(pk=section_id)
-            if obj.section.faculty != request.user:
-                raise ValidationError("You cannot add assessments to a section that you do not teach.")
+        # Check if the user is a superuser
+        if not request.user.is_superuser and obj.section.faculty != request.user:
+            raise forms.ValidationError("You cannot assign assessments to a section you don't own.")
         super().save_model(request, obj, form, change)
-
-    def response_add(self, request, obj, post_url_continue=None):
-        return HttpResponseRedirect(f'/obesystem/section/{obj.section.id}/change/')
-
-    def response_change(self, request, obj):
-        return HttpResponseRedirect(f'/obesystem/section/{obj.section.id}/change/')
-    
-    def has_module_permission(self, request):
-        # Hide 'Assessments' from faculty users
-        return request.user.is_superuser
-
 
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'text', 'marks', 'clo')
