@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.urls import path, reverse
-from django.shortcuts import redirect
-from django.template.response import TemplateResponse
-from django.utils.html import format_html
+from django import forms
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
 from django.core.exceptions import ValidationError
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Program, Course, Section, 
@@ -42,76 +42,43 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ('program',)
     search_fields = ('course_id', 'name')
 
-# class SectionAdmin(admin.ModelAdmin):
-#     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
-#     list_filter = ('semester', 'batch', 'year', 'faculty')
-#     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
-    
-#     # To show the students field as a dual list box
-#     filter_horizontal = ('students',)
-    
-#     fieldsets = (
-#         (None, {
-#             'fields': ('course', 'semester', 'section', 'batch', 'year', 'faculty')
-#         }),
-#         ('Enrolled Students', {
-#             'fields': ('students',),
-#         }),
-#     )
-
-#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#         if db_field.name == "faculty" and not request.user.is_superuser:
-#             kwargs["queryset"] = CustomUser.objects.filter(role='faculty')
-#         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
     list_filter = ('semester', 'batch', 'year')
     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
-    filter_horizontal = ('students',)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.is_staff:
-            return qs
-        return qs.filter(faculty=request.user)
-
-    def get_readonly_fields(self, request, obj=None):
-        return [f.name for f in self.model._meta.fields]  # All fields read-only for everyone
+        if request.user.is_superuser:
+            return super().get_queryset(request)
+        return super().get_queryset(request).filter(faculty=request.user)
 
     def has_add_permission(self, request):
-        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to add sections
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
-        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to edit sections
+        return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser or request.user.is_staff  # Only allow superusers and admins to delete sections
+        return request.user.is_superuser
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('<int:section_id>/assessments/', self.admin_site.admin_view(self.assessment_view), name='section_assessments'),
-        ]
-        return custom_urls + urls
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser or (obj is None or obj.faculty == request.user)
 
-    def assessment_view(self, request, section_id):
-        section = Section.objects.get(pk=section_id)
-        assessments = section.assessments.all()
-        context = {
-            'section': section,
-            'assessments': assessments,
-            'add_assessment_url': reverse('admin:your_app_assessment_add') + f'?section={section_id}',
-            'opts': self.model._meta,
-            'has_change_permission': self.has_change_permission(request, section),
-        }
-        return TemplateResponse(request, 'admin/section_assessment_view.html', context)
-
-    def response_change(self, request, obj):
-        if "_continue" in request.POST:
-            return redirect('admin:section_assessments', section_id=obj.pk)
-        return super().response_change(request, obj)
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        section = get_object_or_404(Section, pk=object_id)
+        extra_context = extra_context or {}
+        extra_context['add_assessment_url'] = reverse('admin:%s_%s_add' % (
+            Assessment._meta.app_label, Assessment._meta.model_name)) + f'?section={object_id}'
+        extra_context['view_assessments_url'] = reverse('admin:%s_%s_changelist' % (
+            Assessment._meta.app_label, Assessment._meta.model_name)) + f'?section__id__exact={object_id}'
         
+        # Print to debug
+        print("Extra context:", extra_context)
+
+        return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+
+            
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     def display_str(self, obj):
         return str(obj)
@@ -130,41 +97,60 @@ class QuestionInline(admin.TabularInline):
     model = Question
     extra = 3
 
+class AssessmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = Assessment
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make section field read-only if section is already set
+        if self.instance and self.instance.pk:
+            self.fields['section'].disabled = True
+        elif 'section' in self.initial:
+            self.fields['section'].queryset = Section.objects.filter(pk=self.initial['section'])
+            self.fields['section'].initial = Section.objects.get(pk=self.initial['section'])
+            self.fields['section'].disabled = True
+
 class AssessmentAdmin(admin.ModelAdmin):
+    form = AssessmentAdminForm
     list_display = ('title', 'section', 'date', 'type')
-    list_filter = ('section', 'type')
+    list_filter = ('section', 'type', 'date')
     search_fields = ('title',)
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(section__faculty=request.user)
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['section'].queryset = Section.objects.filter(faculty=request.user)
+        return form
 
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
-            return []
-        return [f.name for f in self.model._meta.fields]  # All fields read-only for non-superusers and non-assigned faculty
+    def add_view(self, request, form_url='', extra_context=None):
+        section_id = request.GET.get('section')
+        if section_id:
+            extra_context = extra_context or {}
+            extra_context['section'] = Section.objects.get(pk=section_id)
+        return super().add_view(request, form_url, extra_context)
 
-    def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
-            return True
-        return False
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser and not change:
+            section_id = request.GET.get('section')
+            if section_id:
+                obj.section = Section.objects.get(pk=section_id)
+            if obj.section.faculty != request.user:
+                raise ValidationError("You cannot add assessments to a section that you do not teach.")
+        super().save_model(request, obj, form, change)
 
-    def has_add_permission(self, request):
-        if request.user.is_superuser or request.user.role == 'faculty':
-            return True
-        return False
+    def response_add(self, request, obj, post_url_continue=None):
+        return HttpResponseRedirect(f'/obesystem/section/{obj.section.id}/change/')
 
-    def has_delete_permission(self, request, obj=None):
-        if request.user.is_superuser or (obj and obj.section.faculty == request.user):
-            return True
-        return False
-
-    def has_module_permission(self, request):
-        """Hide 'Assessments' from non-superuser users."""
-        return request.user.is_superuser
+    def response_change(self, request, obj):
+        return HttpResponseRedirect(f'/obesystem/section/{obj.section.id}/change/')
     
+    def has_module_permission(self, request):
+        # Hide 'Assessments' from faculty users
+        return request.user.is_superuser
+
+
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'text', 'marks', 'clo')
     list_filter = ('assessment',)

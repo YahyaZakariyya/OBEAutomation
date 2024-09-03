@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+<div class="submit-row">
+    {% if add_assessment_url %}
+    <a href="{{ add_assessment_url }}" class="button btn btn-primary">Add Assessment</a>
+    {% endif %}
+    {% if view_assessments_url %}
+    <a href="{{ view_assessments_url }}" class="button  btn btn-primary">View Assessments</a>
+    {% endif %}
+    {{ block.super }}
+</div>
+{% endblock %}
