@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.urls import reverse
+from django.utils.html import format_html
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.admin import UserAdmin
 from .models import (CustomUser, Program, Course, Section, 
@@ -41,10 +42,27 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ('course_id', 'name')
 
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
+    list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty', 'view_assessments_button', 'create_assessment_button')
     list_filter = ('semester', 'batch', 'year')
     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
 
+    # Method to add the "View Assessments" button
+    def view_assessments_button(self, obj):
+        # Direct URL for viewing assessments filtered by section ID
+        url = f"/obesystem/assessment/?section__id__exact={obj.id}"
+        return format_html('<a class="btn btn-primary" href="{}">View Assessments</a>', url)
+    
+    # Method to add the "Create Assessment" button
+    def create_assessment_button(self, obj):
+        # Direct URL for adding an assessment with the section pre-filled
+        url = f"/obesystem/assessment/add/?section={obj.id}"
+        return format_html('<a class="btn btn-primary" href="{}">Create Assessment</a>', url)
+
+    create_assessment_button.short_description = 'Create Assessment'
+    create_assessment_button.allow_tags = True
+
+    view_assessments_button.short_description = 'View Assessments'
+    view_assessments_button.allow_tags = True
     def get_queryset(self, request):
         if request.user.is_superuser:
             return super().get_queryset(request)
