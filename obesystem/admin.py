@@ -114,7 +114,7 @@ class QuestionInline(admin.TabularInline):
 class AssessmentForm(forms.ModelForm):
     class Meta:
         model = Assessment
-        fields = ['title', 'section', 'date', 'weightage', 'type']
+        fields = ['title', 'section', 'date', 'marks', 'type']
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

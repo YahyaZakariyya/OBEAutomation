@@ -147,8 +147,7 @@ class Assessment(models.Model):
     title = models.CharField(max_length=100)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assessments')
     date = models.DateField()
-    weightage = models.FloatField(default=0, help_text="Max weightage varies by assessment type.")
-
+    marks = models.FloatField(validators=[MinValueValidator(0.0)], help_text="Enter the total marks for the assessment.")
     ASSESSMENT_TYPES = [
         ('quiz', 'Quiz'),
         ('assignment', 'Assignment'),
