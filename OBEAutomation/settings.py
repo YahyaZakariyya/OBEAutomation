@@ -50,8 +50,19 @@ INSTALLED_APPS = [
 JAZZMIN_SETTINGS = {
     "site_title": "OBE Automation",
     "site_header": "OBE Automation",
-    "site_logo": "images/logo.png",  # Path to your new logo
-    "site_icon": "images/logo.png",  # Path to your new logo
+    "site_logo": "images/logo.png",
+    "site_icon": "images/logo.png",
+    "icons": {
+        "obesystem.Assessment": "fas fa-check-circle",
+        "obesystem.CourseLearningOutcome": "fas fa-graduation-cap",
+        "obesystem.ProgramLearningOutcome": "fas fa-university",
+        "obesystem.Question": "fas fa-question-circle",
+        "obesystem.Course": "fas fa-book",
+        "obesystem.Section": "fas fa-columns",
+        "obesystem.Program": "fas fa-sitemap",
+        "obesystem.CustomUser": "fas fa-user",
+        "auth.Group": "fas fa-users",
+    },
 }
 
 MIDDLEWARE = [
