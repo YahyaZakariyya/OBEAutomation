@@ -185,3 +185,13 @@ admin.site.register(ProgramLearningOutcome, ProgramLearningOutcomeAdmin)
 admin.site.register(CourseLearningOutcome, CourseLearningOutcomeAdmin)
 admin.site.register(Assessment, AssessmentAdmin)
 admin.site.register(Question, QuestionAdmin)
+
+# Override the verbose names dynamically in the admin interface
+CourseLearningOutcome._meta.verbose_name = "CLO"
+CourseLearningOutcome._meta.verbose_name_plural = "CLOs"
+
+ProgramLearningOutcome._meta.verbose_name = "PLO"
+ProgramLearningOutcome._meta.verbose_name_plural = "PLOs"
+
+CustomUser._meta.verbose_name = "User"
+CustomUser._meta.verbose_name_plural = "Users"
