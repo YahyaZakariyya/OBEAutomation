@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django import forms
+from django.forms import BaseInlineFormSet, ValidationError
 from django.urls import reverse
 from django.utils.html import format_html
 from django.shortcuts import get_object_or_404
@@ -107,10 +108,37 @@ class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     search_fields = ('description',)
     filter_horizontal = ('mapped_to_PLO',)
 
+# Custom inline formset to enforce the total marks constraint
+class QuestionInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        total_marks = 0
+        for form in self.forms:
+            if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                total_marks += form.cleaned_data['marks']
+
+        # Check if total marks exceed the assessment's total marks
+        if total_marks > self.instance.marks:
+            raise ValidationError(f"Total marks for questions ({total_marks}) exceed the available assessment marks ({self.instance.marks}).")
+
 class QuestionInline(admin.TabularInline):
     model = Question
-    extra = 3
+    formset = QuestionInlineFormSet
+    extra = 1
+    fields = ['text', 'marks', 'clo']
 
+    def save_model(self, request, obj, form, change):
+        # Save the object first to get the ID
+        super().save_model(request, obj, form, change)
+        # Handle Many-to-Many fields after the object has an ID
+        form.save_m2m()
+
+    # Prevent questions from being added until the assessment is created
+    def has_add_permission(self, request, obj):
+        if obj is None:
+            return False  # No adding questions before an assessment is created
+        return super().has_add_permission(request, obj)
+    
 class AssessmentForm(forms.ModelForm):
     class Meta:
         model = Assessment
@@ -127,7 +155,6 @@ class AssessmentForm(forms.ModelForm):
             else:
                 # Regular faculty member can only see their sections
                 self.fields['section'].queryset = Section.objects.filter(faculty=self.user)
-        print(self.user)
 
         if 'section' in self.initial:
             self.fields['section'].widget.attrs['readonly'] = True
@@ -135,6 +162,7 @@ class AssessmentForm(forms.ModelForm):
 
 class AssessmentAdmin(admin.ModelAdmin):
     form = AssessmentForm
+    inlines = [QuestionInline]
 
     def get_form(self, request, obj=None, **kwargs):
         form_class = super().get_form(request, obj, **kwargs)
@@ -145,6 +173,12 @@ class AssessmentAdmin(admin.ModelAdmin):
                 super(FormWithUser, self).__init__(*args, **kwargs)
 
         return FormWithUser
+    
+    def get_inline_instances(self, request, obj=None):
+        # Only show the inlines if the assessment has been created
+        if obj is None:
+            return []  # Don't show the inline questions during assessment creation
+        return super().get_inline_instances(request, obj)
 
     def get_queryset(self, request):
         # Superuser can see all assessments
@@ -162,7 +196,7 @@ class AssessmentAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('assessment', 'text', 'marks', 'clo')
+    list_display = ('assessment', 'text', 'marks')
     list_filter = ('assessment',)
     search_fields = ('text',)
 
