@@ -89,8 +89,6 @@ class SectionAdmin(admin.ModelAdmin):
         extra_context['view_assessments_url'] = reverse('admin:%s_%s_changelist' % (
             Assessment._meta.app_label, Assessment._meta.model_name)) + f'?section__id__exact={object_id}'
         
-        # Print to debug
-        print("Extra context:", extra_context)
 
         return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
             
