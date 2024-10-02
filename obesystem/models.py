@@ -121,6 +121,23 @@ class ProgramLearningOutcome(models.Model):
     )
     heading = models.CharField(max_length=255)
     description = models.TextField()
+    weightage = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text="PLO weightage must be between 0 and 100."
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['program', 'PLO'], name='unique_plo_per_program')
+        ]
+
+    def clean(self):
+        # Validate that the total weightage for all PLOs in a program does not exceed 100%
+        total_weightage = sum(plo.weightage for plo in ProgramLearningOutcome.objects.filter(program=self.program).exclude(id=self.id))
+        total_weightage += self.weightage  # Add current PLO weightage
+
+        if total_weightage > 100:
+            raise ValidationError(f"The total weightage for PLOs in the program {self.program.name} cannot exceed 100%. Current total: {total_weightage}%.")
 
     def __str__(self):
         # Truncate the description to 20-25 characters
@@ -134,12 +151,25 @@ class CourseLearningOutcome(models.Model):
         validators=[MinValueValidator(1)]
     )
     description = models.TextField()
-    mapped_to_PLO = models.ManyToManyField(ProgramLearningOutcome, related_name='related_clos')
+    mapped_to_PLO = models.ManyToManyField(
+        ProgramLearningOutcome, related_name='related_clos'
+    )
+    weightage = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text="Weightage must be between 0 and 100."
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['course', 'CLO'], name='unique_clo_per_course')
         ]
+
+    def clean(self):
+        # Ensure the sum of CLO weightages for each PLO does not exceed 100%
+        for plo in self.mapped_to_PLO.all():
+            total_weightage = sum(clo.weightage for clo in plo.related_clos.all())
+            if total_weightage > 100:
+                raise ValidationError(f"Total weightage for CLOs mapped to PLO {plo.PLO} cannot exceed 100%. Current total: {total_weightage}%.")
 
     def __str__(self):
         return f"CLO {self.CLO}: {self.description}"

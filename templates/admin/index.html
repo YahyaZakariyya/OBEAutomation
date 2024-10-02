@@ -57,6 +57,37 @@
                 </div>
             </div>
 
+            <!-- Dropdown for Selecting Program -->
+            <div class="col-lg-12 mb-4">
+                <div class="bg-light p-3 rounded">
+                    <h6>Select Program</h6>
+                    <select id="programSelect" class="form-select">
+                        <option value="program1">Program 1</option>
+                        <option value="program2">Program 2</option>
+                        <option value="program3">Program 3</option>
+                        <option value="program4">Program 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bar Chart for PLOs -->
+            <div class="col-lg-12 mb-4" id="ploChartContainer">
+                <div class="bg-light p-3 rounded">
+                    <h6 id="programTitle">PLOs Weightage Distribution for Program 1</h6>
+                    <canvas id="ploChart" style="max-height: 400px;"></canvas>
+                    <p>Total weightage of all PLOs for the selected program is 100%</p> <!-- Message -->
+                </div>
+            </div>
+
+            <!-- Bar Chart for CLOs (Initially Hidden) -->
+            <div class="col-lg-12 mb-4" id="cloChartContainer" style="display:none;">
+                <div class="bg-light p-3 rounded">
+                    <h6 id="cloChartTitle">CLOs Weightage Distribution for <span id="selectedPLO"></span> of Program 1</h6>
+                    <canvas id="cloChart" style="max-height: 400px;"></canvas>
+                    <button class="btn btn-secondary mt-3" id="backToPLOs">Back to PLOs</button>
+                </div>
+            </div>
+
             <div class="row">
                 <!-- Static Graph for PO Mapping Status -->
                 <div class="col-lg-6 mb-4">
@@ -84,7 +115,7 @@
                 </div>
             </div>
 
-            <!-- Courses Status Table -->
+            <!-- Courses Status Table
             <div class="row">
                 <div class="col-lg-12 mb-4">
                     <div class="bg-light p-3 rounded">
@@ -118,10 +149,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Dynamic Django Logic for the Dashboard App List -->
-        {% get_side_menu using="app_list" as dashboard_list %}
+        <!-- {% get_side_menu using="app_list" as dashboard_list %}
         {% if dashboard_list %}
             {% widthratio dashboard_list|length 2 1 as middle %}
         {% endif %}
@@ -142,7 +173,7 @@
                     </div>
                 {% endfor %}
             {% endfor %}
-        </div>
+        </div> -->
     
     {% comment %} {% elif request.user.groups.filter(name='Faculty').exists %}
         <!-- Display for Faculty -->
@@ -269,6 +300,172 @@
                 }
             }
         });
+
+        // Sample static data for 4 programs, PLOs, and CLOs
+        const programsData = {
+            program1: {
+                PLOs: ['PLO 1', 'PLO 2', 'PLO 3', 'PLO 4', 'PLO 5'],
+                PLOWeights: [30, 20, 35, 10, 5], // The PLOs sum to 100%
+                CLOs: {
+                    'PLO 1': [40, 30, 30], // The CLOs sum to 100% for PLO 1
+                    'PLO 2': [20, 30, 50],
+                    'PLO 3': [25, 25, 25, 25],
+                    'PLO 4': [50, 50],
+                    'PLO 5': [100]
+                }
+            },
+            program2: {
+                PLOs: ['PLO 1', 'PLO 2', 'PLO 3', 'PLO 4', 'PLO 5', 'PLO 6'],
+                PLOWeights: [25, 25, 25, 15, 5, 5], // The PLOs sum to 100%
+                CLOs: {
+                    'PLO 1': [50, 50],
+                    'PLO 2': [20, 30, 50],
+                    'PLO 3': [25, 25, 50],
+                    'PLO 4': [40, 60],
+                    'PLO 5': [60, 40],
+                    'PLO 6': [100]
+                }
+            },
+        };
+
+        // Light color palette for charts
+        const lightColors = [
+            'rgba(173, 216, 230, 0.6)', // Light Blue
+            'rgba(255, 182, 193, 0.6)', // Light Pink
+            'rgba(144, 238, 144, 0.6)', // Light Green
+            'rgba(255, 222, 173, 0.6)', // Light Orange
+            'rgba(221, 160, 221, 0.6)', // Light Purple
+            'rgba(255, 255, 224, 0.6)'  // Light Yellow
+        ];
+
+        // Initialize Charts
+        var ploCtx = document.getElementById('ploChart').getContext('2d');
+        var cloCtx = document.getElementById('cloChart').getContext('2d');
+        var ploChart;
+        var cloChart;
+
+        function createPLOChart(program) {
+            const data = programsData[program];
+            const ploLabels = data.PLOs;
+            const ploData = data.PLOWeights; // Use the PLO weight data
+
+            // Update program title
+            document.getElementById('programTitle').innerText = `PLOs Weightage Distribution for ${program}`;
+
+            // Find the max PLO weightage to set as max value for X-axis
+            const maxPLOWeightage = Math.max(...ploData);
+
+            if (ploChart) {
+                ploChart.destroy(); // Destroy previous chart instance
+            }
+
+            ploChart = new Chart(ploCtx, {
+                type: 'bar',
+                data: {
+                    labels: ploLabels,
+                    datasets: [{
+                        label: 'PLO Weightage',
+                        data: ploData,
+                        backgroundColor: ploLabels.map((_, index) => lightColors[index % lightColors.length]), // Use predefined light colors
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    onClick: function (e) {
+                        var activePoint = ploChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+
+                        if (activePoint.length > 0) {
+                            var clickedPLO = ploLabels[activePoint[0].index];
+                            createCLOChart(program, clickedPLO);
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false, // Allow max-height setting to work
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: maxPLOWeightage, // Set max value based on PLO weightage
+                            title: {
+                                display: true,
+                                text: 'Weightage (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCLOChart(program, plo) {
+            const data = programsData[program];
+            const cloData = data.CLOs[plo]; // Get the CLO data for the selected PLO
+
+            // Ensure cloData exists and is an array
+            if (!cloData || cloData.length === 0) {
+                alert('No CLO data found for the selected PLO');
+                return;
+            }
+
+            // Hide the PLO chart and display the CLO chart container
+            document.getElementById('ploChartContainer').style.display = 'none';
+            document.getElementById('cloChartContainer').style.display = 'block';
+
+            // Update the title to reflect the selected PLO and program
+            document.getElementById('selectedPLO').innerText = plo;
+            document.getElementById('cloChartTitle').innerText = `CLOs Weightage Distribution for ${plo} of ${program}`;
+
+            // Check if the cloChart instance exists and destroy it before drawing a new one
+            if (cloChart) {
+                cloChart.destroy(); // Destroy previous chart instance
+            }
+
+            // Create a new CLO chart with fresh data
+            cloChart = new Chart(cloCtx, {
+                type: 'bar', // Horizontal bar chart for CLOs
+                data: {
+                    labels: cloData.map((_, i) => `CLO ${i + 1}`), // Create labels like 'CLO 1', 'CLO 2', etc.
+                    datasets: [{
+                        label: `CLO Weightage for ${plo}`, // Set label for CLOs
+                        data: cloData, // Use the actual CLO data
+                        backgroundColor: cloData.map((_, index) => lightColors[index % lightColors.length]), // Use light colors
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Ensure chart adapts to given height
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100, // Total weightage is 100%
+                            title: {
+                                display: true,
+                                text: 'Weightage (%)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Debugging to check if the correct CLO data is loaded
+            console.log('Loaded CLO Data for PLO:', plo, 'is', cloData);
+        }
+
+
+        // Event listener for the dropdown to switch between programs
+        document.getElementById('programSelect').addEventListener('change', function () {
+            createPLOChart(this.value);
+            document.getElementById('cloChartContainer').style.display = 'none'; // Hide CLO chart when program changes
+            document.getElementById('ploChartContainer').style.display = 'block'; // Show PLO chart again
+        });
+
+        // Back to PLOs button
+        document.getElementById('backToPLOs').addEventListener('click', function () {
+            document.getElementById('ploChartContainer').style.display = 'block'; // Show PLO chart
+            document.getElementById('cloChartContainer').style.display = 'none'; // Hide CLO chart
+        });
+
+        // Create chart for the default program on page load
+        createPLOChart('program1');
 
     </script>
 
