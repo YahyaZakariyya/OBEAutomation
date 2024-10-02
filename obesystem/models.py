@@ -121,6 +121,23 @@ class ProgramLearningOutcome(models.Model):
     )
     heading = models.CharField(max_length=255)
     description = models.TextField()
+    weightage = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text="PLO weightage must be between 0 and 100."
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['program', 'PLO'], name='unique_plo_per_program')
+        ]
+
+    def clean(self):
+        # Validate that the total weightage for all PLOs in a program does not exceed 100%
+        total_weightage = sum(plo.weightage for plo in ProgramLearningOutcome.objects.filter(program=self.program).exclude(id=self.id))
+        total_weightage += self.weightage  # Add current PLO weightage
+
+        if total_weightage > 100:
+            raise ValidationError(f"The total weightage for PLOs in the program {self.program.name} cannot exceed 100%. Current total: {total_weightage}%.")
 
     def __str__(self):
         # Truncate the description to 20-25 characters
