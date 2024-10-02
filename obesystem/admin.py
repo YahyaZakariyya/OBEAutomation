@@ -24,13 +24,38 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2', 'role'),
         }),
     )
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role')
     search_fields = ('username', 'first_name', 'last_name', 'email')
-    ordering = ('username',)
+    list_filter = ('role',)
+    # ordering = ('username',)
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'hod')
+    list_display = ('custom_program_name', 'custom_hod_name', 'view_courses', 'view_plos')
     search_fields = ('name',)
+
+    def custom_program_name(self, obj):
+        return obj.name
+    custom_program_name.short_description = "Programs"
+    custom_program_name.admin_order_field = "name"
+
+    def custom_hod_name(self, obj):
+        return obj.hod
+    custom_hod_name.short_description = "Head of Department"
+    custom_hod_name.admin_order_field = "hod"
+
+    def view_courses(self, obj):
+        url = f"/obesystem/course/?program__id={obj.id}"
+        return format_html('<a class="btn btn-primary" href="{}">View Courses</a>', url)
+    
+    view_courses.short_description = "View Courses"
+    view_courses.allow_tags = True  # Ensures the HTML is rendered correctly
+
+    def view_plos(self, obj):
+        url = f"/obesystem/programlearningoutcome/?program__id__exact={obj.id}"
+        return format_html('<a class="btn btn-primary" href="{}">View PLOs</a>', url)
+    
+    view_plos.short_description = "View PLOs"
+    view_plos.allow_tags = True  # Ensures the HTML is rendered correctly
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "hod" and not request.user.is_superuser:
@@ -38,9 +63,19 @@ class ProgramAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_id', 'name', 'program')
-    list_filter = ('program',)
-    search_fields = ('course_id', 'name')
+    list_display = ('custom_course_name','credit_hours','view_clos')
+    search_fields = ('name',)
+
+    def custom_course_name(self, obj):
+        return obj.name
+    custom_course_name.short_description = "Course Title"
+    custom_course_name.admin_order_field = "name"
+
+    def view_clos(self, obj):
+        url = f"/obesystem/courselearningoutcome/?course__id__exact={obj.id}"
+        return format_html('<a class="btn btn-primary" href="{}">View CLOs</a>', url)
+    view_clos.short_description = "View CLOs"
+    view_clos.allow_tags = True  # Ensures the HTML is rendered correctly
 
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty', 'view_assessments_button', 'create_assessment_button')
@@ -100,11 +135,19 @@ class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     list_filter = ('program',)
     search_fields = ('description',)
 
+    def has_module_permission(self, request):
+        # Hide the course from the admin index page and sidebar
+        return False
+
 class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('course', 'description')
     list_filter = ('course',)
     search_fields = ('description',)
     filter_horizontal = ('mapped_to_PLO',)
+
+    def has_module_permission(self, request):
+        # Hide the course from the admin index page and sidebar
+        return False
 
 # Custom inline formset to enforce the total marks constraint
 class QuestionInlineFormSet(BaseInlineFormSet):
@@ -193,6 +236,10 @@ class AssessmentAdmin(admin.ModelAdmin):
             raise forms.ValidationError("You cannot assign assessments to a section you don't own.")
         super().save_model(request, obj, form, change)
 
+    def has_module_permission(self, request):
+        # Hide the course from the admin index page and sidebar
+        return False
+
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'text', 'marks')
     list_filter = ('assessment',)
@@ -216,7 +263,7 @@ admin.site.register(Section, SectionAdmin)
 admin.site.register(ProgramLearningOutcome, ProgramLearningOutcomeAdmin)
 admin.site.register(CourseLearningOutcome, CourseLearningOutcomeAdmin)
 admin.site.register(Assessment, AssessmentAdmin)
-admin.site.register(Question, QuestionAdmin)
+# admin.site.register(Question, QuestionAdmin)
 
 # Override the verbose names dynamically in the admin interface
 CourseLearningOutcome._meta.verbose_name = "CLO"
@@ -227,3 +274,5 @@ ProgramLearningOutcome._meta.verbose_name_plural = "PLOs"
 
 CustomUser._meta.verbose_name = "User"
 CustomUser._meta.verbose_name_plural = "Users"
+
+# Program._meta.verbose_name_plural = "Programs & Courses"
