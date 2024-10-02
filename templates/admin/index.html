@@ -20,125 +20,130 @@
         {% widthratio dashboard_list|length 2 1 as middle %}
     {% endif %}
 
-    <!-- <div class="col-lg-9 col-12">
-        <div class="row">
-            <div class="col-md-6 col-sm-12">
-                {% for app in dashboard_list %}
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="m-0">{{ app.name }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                {% for model in app.models %}
-                                    <tr>
-                                        <td>
-                                            {% if model.url %}<a href="{{ model.url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="btn-group float-right">
-                                                {% if model.add_url %}
-                                                    <a href="{{ model.add_url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.success }} addlink">{% trans 'Add' %}</a>
-                                                {% endif %}
-                                                {% if model.url %}
-                                                    {% if model.view_only %}
-                                                        <a href="{{ model.url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.info }} viewlink">{% trans 'View' %}</a>
-                                                    {% else %}
-                                                        <a href="{{ model.url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.info }} changelink">{% if model.custom %}{% trans 'Go' %}{% else %}{% trans 'Change' %}{% endif %}</a>
-                                                    {% endif %}
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {% if forloop.counter == middle|add:"0" %}
-                    </div>
-                    <div class="col-md-6 col-sm-12">
-                    {% endif %}
-
-                {% endfor %}
-                </div>
-        </div>
-
-    </div> -->
-
-    <!-- Recent Actions -->
-    <!-- <div class="col-lg-3 col-12">
-        <div id="content-related">
-            <div class="module" id="recent-actions-module">
-                <h4 class="mb-3">{% trans 'Recent actions' %}</h4>
-                {% load log %}
-                {% get_admin_log 6 as admin_log for_user user %}
-                {% if not admin_log %}
-                    <p>{% trans 'None available' %}</p>
-                {% else %}
-                    <div class="timeline">
-                        {% for entry in admin_log %}
-                            <div>
-                                {% if entry.is_change %}
-                                    <i class="fas fa-edit bg-gray text-xs"></i>
-                                {% elif entry.is_deletion %}
-                                    <i class="fas fa-trash bg-danger text-xs"></i>
-                                {% elif entry.is_addition %}
-                                    <i class="fas fa-plus-circle bg-success text-xs"></i>
-                                {% endif %}
-
-                                <div class="timeline-item">
-                                    <span class="time"><i class="fas fa-clock"></i> {% blocktrans with timesince=entry.action_time|timesince %}{{ timesince }} ago{% endblocktrans %}</span>
-                                    <h3 class="timeline-header no-border">
-                                        {% if entry.is_deletion or not entry.get_admin_url %}
-                                            {{ entry.object_repr }}
-                                        {% else %}
-                                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                                        {% endif %}
-
-                                        {% if entry.model %}
-                                            <span class="mini quiet">
-                                                {% filter capfirst %}
-                                                    {{ entry.model }}
-                                                {% endfilter %}
-                                            </span>
-                                        {% endif %}
-                                    </h3>
-                                    {% if not entry.is_deletion %}
-                                        <div class="timeline-body">
-                                            {% if entry.is_addition %}
-                                                {{ entry }}
-                                            {% else %}
-                                                <ul style="list-style: none; padding: 0;">
-                                                    {% action_message_to_list entry as action_message_list %}
-                                                    {% for action_message in action_message_list %}
-                                                        <li>{{ action_message.msg|style_bold_first_word }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                        <div>
-                            <i class="fa fa-clock bg-gray"></i>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div> -->
-
     {% if request.user.is_superuser %}
         <!-- Display for Admin -->
-        <h2>Welcome Admin!</h2>
-        <div class="admin-dashboard">
-            <!-- Admin-specific content, links, and stats -->
+        <!-- Static Content for Total Stats and Graphs -->
+        <div class="col-12">
+            <div class="row">
+                <!-- Total Students -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
+                        <i class="bi bi-mortarboard display-4 me-3"></i>
+                        <div>
+                            <h6>Total Students</h6>
+                            <p class="h2">40,223</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Employees -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
+                        <i class="bi bi-people-fill display-4 me-3"></i>
+                        <div>
+                            <h6>Total Employees</h6>
+                            <p class="h2">52</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Programs -->
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
+                        <i class="bi bi-journal-bookmark display-4 me-3"></i>
+                        <div>
+                            <h6>Total Programs</h6>
+                            <p class="h2">04</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Static Graph for PO Mapping Status -->
+                <div class="col-lg-6 mb-4">
+                    <div class="bg-light p-3 rounded">
+                        <h6>PO Mapping Status</h6>
+                        <canvas style="max-height: 500px;" id="poMappingChart" height="300"></canvas>
+                        <button class="btn btn-primary mt-3">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Static Graph for Courses Status -->
+                <div class="col-lg-6 mb-4">
+                    <div class="bg-light p-3 rounded">
+                        <h6>Courses Status</h6>
+                        <canvas style="max-height: 500px;" id="coursesStatusChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Static Graph for Student Enrollment Over Time -->
+            <div class="col-lg-12 mb-4">
+                <div class="bg-light p-3 rounded">
+                    <h6>Student Enrollment Over Time</h6>
+                    <canvas style="max-height: 500px;" id="enrollmentChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Courses Status Table -->
+            <div class="row">
+                <div class="col-lg-12 mb-4">
+                    <div class="bg-light p-3 rounded">
+                        <h6>Courses Status</h6>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>14EC390 - Survey Lab II</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>EC 4053 - Engineering Acoustics</td>
+                                    <td><span class="badge bg-danger">Not Assigned</span></td>
+                                </tr>
+                                <tr>
+                                    <td>EC 4054 - Remote Sensing</td>
+                                    <td><span class="badge bg-danger">Not Assigned</span></td>
+                                </tr>
+                                <tr>
+                                    <td>EC 4051 - Wireless Sensor Networks</td>
+                                    <td><span class="badge bg-danger">Not Assigned</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Dynamic Django Logic for the Dashboard App List -->
+        {% get_side_menu using="app_list" as dashboard_list %}
+        {% if dashboard_list %}
+            {% widthratio dashboard_list|length 2 1 as middle %}
+        {% endif %}
+
+        <div class="row text-center">
+            {% for app in dashboard_list %}
+                {% for model in app.models %}
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                        <div class="bg-light p-3 rounded">
+                            <h6>{{ model.name }}</h6>
+                            {% if model.add_url %}
+                                <a href="{{ model.add_url }}" class="btn btn-success w-100">ADD</a>
+                            {% endif %}
+                            {% if model.url %}
+                                <a href="{{ model.url }}" class="btn btn-primary w-100 mt-2">CHANGE</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    
     {% comment %} {% elif request.user.groups.filter(name='Faculty').exists %}
         <!-- Display for Faculty -->
         <h2>Welcome Faculty Member!</h2>
@@ -160,5 +165,111 @@
         </div>
     {% endif %}
 
+    <!-- Chart.js Script -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // PO Mapping Status Chart
+        var ctxPO = document.getElementById('poMappingChart').getContext('2d');
+        var poMappingChart = new Chart(ctxPO, {
+            type: 'bar', // Bar chart for PO Mapping
+            data: {
+                labels: ['BSCS', 'BSIT', 'BSCY', 'BSAI', 'BSEE'], // Departments
+                datasets: [{
+                    label: 'PO Completed',
+                    data: [13, 12, 12, 7, 9], // Example data
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Courses Status Pie Chart
+        var ctxCourses = document.getElementById('coursesStatusChart').getContext('2d');
+        var coursesStatusChart = new Chart(ctxCourses, {
+            type: 'pie', // Pie chart for Courses Status
+            data: {
+                labels: ['Approved', 'No Course Outlay', 'Submitted', 'Not Assigned'],
+                datasets: [{
+                    data: [10, 5, 15, 20], // Example data
+                    backgroundColor: ['rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
+                    borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        // Student Enrollment Over Time (Line Chart)
+        var ctxEnrollment = document.getElementById('enrollmentChart').getContext('2d');
+        var enrollmentChart = new Chart(ctxEnrollment, {
+            type: 'line',
+            data: {
+                labels: ['2019', '2020', '2021', '2022', '2023'], // Example years
+                datasets: [
+                    {
+                        label: 'Computer Science',
+                        data: [1000, 1200, 1500, 1600, 1700], // Example data for CS
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Electrical Engineering',
+                        data: [800, 900, 950, 1000, 1100], // Example data for EE
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Mechanical Engineering',
+                        data: [600, 650, 700, 750, 800], // Example data for ME
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Civil Engineering',
+                        data: [500, 550, 600, 620, 630], // Example data for CE
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Students' // Y-axis title
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year' // X-axis title
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
 
 {% endblock %}
