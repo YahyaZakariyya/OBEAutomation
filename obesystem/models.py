@@ -134,12 +134,25 @@ class CourseLearningOutcome(models.Model):
         validators=[MinValueValidator(1)]
     )
     description = models.TextField()
-    mapped_to_PLO = models.ManyToManyField(ProgramLearningOutcome, related_name='related_clos')
+    mapped_to_PLO = models.ManyToManyField(
+        ProgramLearningOutcome, related_name='related_clos'
+    )
+    weightage = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text="Weightage must be between 0 and 100."
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['course', 'CLO'], name='unique_clo_per_course')
         ]
+
+    def clean(self):
+        # Ensure the sum of CLO weightages for each PLO does not exceed 100%
+        for plo in self.mapped_to_PLO.all():
+            total_weightage = sum(clo.weightage for clo in plo.related_clos.all())
+            if total_weightage > 100:
+                raise ValidationError(f"Total weightage for CLOs mapped to PLO {plo.PLO} cannot exceed 100%. Current total: {total_weightage}%.")
 
     def __str__(self):
         return f"CLO {self.CLO}: {self.description}"
