@@ -63,7 +63,8 @@ class ProgramAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('custom_course_name','credit_hours','view_clos')
+    list_display = ('custom_course_name','credit_hours','program','view_clos')
+    list_filter = ('program',)
     search_fields = ('name',)
 
     def custom_course_name(self, obj):
@@ -128,12 +129,26 @@ class SectionAdmin(admin.ModelAdmin):
         return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
             
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
-    def display_str(self, obj):
+    def custom_number(self, obj):
         return str(obj)
-    display_str.short_description = 'PLO Details'
-    list_display = ('program','display_str')
-    list_filter = ('program',)
+    custom_number.short_description = 'PLO Number'
+
+    def custom_description(self, obj):
+        return obj.description
+    custom_description.short_description = 'PLO Description'
+
+    def weightage_with_percentage(self, obj):
+        return f"{obj.weightage}%"
+    weightage_with_percentage.short_description = 'Weightage'
+
+    list_display = ('custom_number', 'custom_description', 'weightage_with_percentage')
     search_fields = ('description',)
+    list_filter = ('program',)
+
+    def get_queryset(self, request):
+        # Order PLOs by ascending PLO number
+        qs = super().get_queryset(request)
+        return qs.order_by('PLO')  # Ascending order by PLO number
 
     def has_module_permission(self, request):
         # Hide the course from the admin index page and sidebar
@@ -144,6 +159,17 @@ class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_filter = ('course',)
     search_fields = ('description',)
     filter_horizontal = ('mapped_to_PLO',)
+
+    def save_model(self, request, obj, form, change):
+        # Save the instance first
+        super().save_model(request, obj, form, change)
+        # Save the ManyToMany relations
+        form.save_m2m()
+
+    def save_related(self, request, form, formsets, change):
+        # Save related many-to-many data after the main form is saved
+        form.save_m2m()
+        super().save_related(request, form, formsets, change)
 
     def has_module_permission(self, request):
         # Hide the course from the admin index page and sidebar

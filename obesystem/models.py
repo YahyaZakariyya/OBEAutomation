@@ -117,7 +117,6 @@ class ProgramLearningOutcome(models.Model):
     PLO = models.PositiveIntegerField(
         choices=PLO_CHOICES,
         validators=[MinValueValidator(1)],
-        unique=True
     )
     heading = models.CharField(max_length=255)
     description = models.TextField()
@@ -140,9 +139,7 @@ class ProgramLearningOutcome(models.Model):
             raise ValidationError(f"The total weightage for PLOs in the program {self.program.name} cannot exceed 100%. Current total: {total_weightage}%.")
 
     def __str__(self):
-        # Truncate the description to 20-25 characters
-        desc_preview = self.description[:25] + ('...' if len(self.description) > 25 else '')
-        return f"PLO {self.PLO}: {self.heading}: {desc_preview}"
+        return f"PLO {self.PLO}: {self.heading}:"
     
 class CourseLearningOutcome(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_outcomes')
@@ -164,8 +161,11 @@ class CourseLearningOutcome(models.Model):
             models.UniqueConstraint(fields=['course', 'CLO'], name='unique_clo_per_course')
         ]
 
-    def clean(self):
-        # Ensure the sum of CLO weightages for each PLO does not exceed 100%
+    def save(self, *args, **kwargs):
+        # First, save the object to generate an ID (if it's a new object)
+        super().save(*args, **kwargs)
+        
+        # Now that the object is saved, we can safely access ManyToMany relationships
         for plo in self.mapped_to_PLO.all():
             total_weightage = sum(clo.weightage for clo in plo.related_clos.all())
             if total_weightage > 100:
