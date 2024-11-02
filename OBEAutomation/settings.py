@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
     # custom apps
     # 'obesystem.apps.ObesystemConfig',
-    'obesystem',
+    'obesystem.apps.ObesystemConfig',
 ]
 
 JAZZMIN_SETTINGS = {
@@ -52,6 +52,8 @@ JAZZMIN_SETTINGS = {
     "site_header": "OBE Automation",
     "site_logo": "images/logo.png",
     "site_icon": "images/logo.png",
+    "site_brand": "OBE Automation",
+    "site_favicon": "images/favicon.ico",
     "icons": {
         "obesystem.Assessment": "fas fa-check-circle",
         "obesystem.CourseLearningOutcome": "fas fa-graduation-cap",
@@ -142,13 +144,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
