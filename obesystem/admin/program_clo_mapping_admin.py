@@ -88,3 +88,6 @@ class ProgramCLOMappingAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
 admin.site.register(ProgramCLOMapping, ProgramCLOMappingAdmin)
+
+ProgramCLOMapping._meta.verbose_name = "Mapping (CLO → PLO)"
+ProgramCLOMapping._meta.verbose_name_plural = "Mappings (CLO → PLO)"

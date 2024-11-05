@@ -92,9 +92,10 @@ JAZZMIN_SETTINGS = {
         "obesystem.ProgramLearningOutcome": "fas fa-university",
         "obesystem.Question": "fas fa-question-circle",
         "obesystem.Course": "fas fa-book",
-        "obesystem.Section": "fas fa-columns",
-        "obesystem.Program": "fas fa-sitemap",
+        "obesystem.Section": "fas fa-th-list",
+        "obesystem.Program": "fas fa-university",
         "obesystem.CustomUser": "fas fa-user",
+        "obesystem.ProgramCLOMapping":"fas fa-graduation-cap",
         "auth.Group": "fas fa-users",
     },
 }
