@@ -2,21 +2,20 @@ from django.contrib import admin
 from obesystem.models import ProgramLearningOutcome
 
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
+    list_display = ('custom_number', 'custom_description', 'weightage_with_percentage')
+    list_filter = ('program',)
+
     def custom_number(self, obj):
         return str(obj)
-    custom_number.short_description = 'PLO Number'
+    custom_number.short_description = 'PLO #'
 
     def custom_description(self, obj):
         return obj.description
-    custom_description.short_description = 'PLO Description'
+    custom_description.short_description = 'Description'
 
     def weightage_with_percentage(self, obj):
         return f"{obj.weightage}%"
     weightage_with_percentage.short_description = 'Weightage'
-
-    list_display = ('custom_number', 'custom_description', 'weightage_with_percentage')
-    search_fields = ('description',)
-    list_filter = ('program',)
 
     def get_queryset(self, request):
         # Order PLOs by ascending PLO number
