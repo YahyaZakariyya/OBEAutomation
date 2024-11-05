@@ -17,7 +17,7 @@ class ProgramAdmin(admin.ModelAdmin):
     custom_hod_name.admin_order_field = "hod"
 
     def view_courses(self, obj):
-        url = f"/obesystem/course/?program__id={obj.id}"
+        url = f"/obesystem/course/?programs__id__exact={obj.id}"
         return format_html('<a class="btn btn-primary" href="{}">View Courses</a>', url)
     
     view_courses.short_description = "View Courses"
