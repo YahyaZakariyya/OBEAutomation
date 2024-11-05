@@ -12,7 +12,7 @@ class Course(models.Model):
     programs = models.ManyToManyField('Program', related_name='courses')
 
     def __str__(self):
-        return f"{self.name} - {self.course_id}"
+        return f"{self.name} ({self.course_id})"
 
     class Meta:
         unique_together = ('course_id', 'name', 'credit_hours')
