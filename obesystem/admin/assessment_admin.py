@@ -59,8 +59,8 @@ class AssessmentAdmin(admin.ModelAdmin):
             raise forms.ValidationError("You cannot assign assessments to a section you don't own.")
         super().save_model(request, obj, form, change)
 
-    def has_module_permission(self, request):
-        # Hide the course from the admin index page and sidebar
-        return False
+    # def has_module_permission(self, request):
+    #     # Hide the course from the admin index page and sidebar
+    #     return False
 
 admin.site.register(Assessment, AssessmentAdmin)

@@ -1,4 +1,5 @@
 from .assessment_admin import *
+from .assessment_breakdown_admin import *
 from .course_admin import *
 from .course_learning_outcome_admin import *
 from .custom_user_admin import *
