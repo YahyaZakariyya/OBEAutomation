@@ -16,7 +16,6 @@ def get_plos(request):
 def get_clos(request):
     course_id = request.GET.get('course_id')
     clos = CourseLearningOutcome.objects.filter(course_id=course_id)
-    # Use 'description' instead of 'name'
     data = [{'id': clo.id, 'name': clo.description} for clo in clos]
     return JsonResponse(data, safe=False)
 

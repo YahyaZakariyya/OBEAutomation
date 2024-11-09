@@ -1,11 +1,17 @@
 from django.contrib import admin
 from django import forms
-from django.urls import reverse
+from django.http import JsonResponse
+from django.urls import reverse, path
 from django.utils.html import format_html
 from django.shortcuts import get_object_or_404
 
 from obesystem.models import Section, Course, Program, Assessment
 
+def get_courses(request):
+    program_id = request.GET.get('program_id')
+    courses = Course.objects.filter(programs__id=program_id)
+    data = [{'id': course.id, 'name': course.name} for course in courses]
+    return JsonResponse(data, safe=False)
 
 # Custom form to filter the program choices dynamically in Django admin
 class SectionForm(forms.ModelForm):
@@ -15,17 +21,17 @@ class SectionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'course' in self.data:
+        # Initially hide the course field by removing its choices
+        self.fields['course'].queryset = self.fields['course'].queryset.none()
+
+        if 'program' in self.data:
             try:
-                course_id = int(self.data.get('course'))
-                course = Course.objects.get(id=course_id)
-                self.fields['program'].queryset = course.programs.all()
-            except (ValueError, Course.DoesNotExist):
-                self.fields['program'].queryset = Program.objects.none()
-        elif self.instance.pk and self.instance.course:
-            self.fields['program'].queryset = self.instance.course.programs.all()
-        else:
-            self.fields['program'].queryset = Program.objects.none()
+                program_id = int(self.data.get('program'))
+                self.fields['course'].queryset = Program.objects.get(id=program_id).courses.all()
+            except (ValueError, TypeError):
+                pass  # Invalid input; ignore
+        elif self.instance.pk:
+            self.fields['course'].queryset = self.instance.program.courses.all()
 
 class SectionAdmin(admin.ModelAdmin):
     form = SectionForm
@@ -82,6 +88,13 @@ class SectionAdmin(admin.ModelAdmin):
     
     class Media:
         js = ('admin/js/dynamic_program.js',)  # Link to the custom JavaScript file
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('get-courses/', self.admin_site.admin_view(get_courses), name='get_courses'),
+        ]
+        return custom_urls + urls
 
 
 admin.site.register(Section, SectionAdmin)
