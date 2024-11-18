@@ -1,66 +1,45 @@
 from django.db import models
-from .program import Program
-from .plo import ProgramLearningOutcome
-from .clo import CourseLearningOutcome
 from django.core.exceptions import ValidationError
 
 class ProgramCLOMapping(models.Model):
-    program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="clo_mappings")
-    plo = models.ForeignKey(ProgramLearningOutcome, on_delete=models.CASCADE, related_name="clo_mappings")
+    program = models.ForeignKey('Program', on_delete=models.CASCADE, related_name="clo_mappings")
     course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name="program_clo_mappings")
-    clo = models.ForeignKey(CourseLearningOutcome, on_delete=models.CASCADE, related_name="program_mappings")
-    weightage = models.FloatField()
+    plo = models.ForeignKey('ProgramLearningOutcome', on_delete=models.CASCADE, related_name="clo_mappings")
+    clo = models.ForeignKey('CourseLearningOutcome', on_delete=models.CASCADE, related_name="program_mappings")
+    weightage = models.FloatField()  # Weightage for CLO in the context of its PLO (0-100)
 
     class Meta:
-        unique_together = ('program', 'course', 'clo', 'plo')
+        unique_together = ('program', 'course', 'clo')  # Ensures one CLO maps to only one PLO per course
 
     def __str__(self):
-        return f"{self.program} - {self.course} - {self.clo} to {self.plo} (Weightage: {self.weightage}%)"
+        return f"{self.program} - {self.course} - {self.clo} maps to {self.plo} (Weightage: {self.weightage}%)"
 
     def clean(self):
-        """Ensures that the total weightage for CLO mappings for this course in this program does not exceed 100% 
-           and automatically distributes weightage if a CLO maps to multiple PLOs."""
-        
-        # Get all mappings for this CLO within the same program and course
-        mappings = ProgramCLOMapping.objects.filter(program=self.program, course=self.course, clo=self.clo).exclude(pk=self.pk)
-        
-        # Count existing mappings plus this instance
-        num_plos = mappings.count() + 1
+        """
+        Validates constraints:
+        1. Each CLO maps to only one PLO.
+        2. Total weightage of CLOs mapping to the same PLO within the same course must not exceed 100%.
+        """
 
-        # Automatically distribute weightage if mapping to multiple PLOs
-        if num_plos > 1:
-            # Calculate the evenly distributed weightage
-            suggested_weightage = 100.0 / num_plos
+        # Ensure each CLO maps to only one PLO
+        existing_mapping = ProgramCLOMapping.objects.filter(course=self.course, clo=self.clo).exclude(pk=self.pk)
+        if existing_mapping.exists():
+            raise ValidationError(f"CLO '{self.clo}' is already mapped to another PLO in this course.")
 
-            # Set weightage for the current instance
-            self.weightage = suggested_weightage
+        # Get all existing mappings for the same PLO and course (excluding this instance)
+        mappings_for_same_plo = ProgramCLOMapping.objects.filter(course=self.course, plo=self.plo).exclude(pk=self.pk)
 
-            # Validate that all mappings have distributed weightage
-            for mapping in mappings:
-                if mapping.weightage != suggested_weightage:
-                    raise ValidationError(f"Each CLO mapped to multiple PLOs should have a distributed weightage of {suggested_weightage}%.")
-        
-        # Ensure total weightage for the program-course combination does not exceed 100%
-        total_weightage = sum(mapping.weightage for mapping in mappings) + self.weightage
+        # Calculate the total weightage for this PLO
+        total_weightage = sum(mapping.weightage for mapping in mappings_for_same_plo) + self.weightage
+
+        # Ensure the total weightage for this specific PLO does not exceed 100%
         if total_weightage > 100:
-            raise ValidationError("Total weightage for all CLO mappings in this course and program must not exceed 100%.")
-
-    # def save(self, *args, **kwargs):
-    #     # Automatically calculate and assign distributed weightage if mapping to multiple PLOs
-    #     mappings = ProgramCLOMapping.objects.filter(program=self.program, clo=self.clo)
-    #     num_plos = mappings.count() + 1  # including the current instance
-
-    #     # Set the weightage for each mapping to evenly distribute 100% across all mappings
-    #     distributed_weightage = 100.0 / num_plos
-
-    #     # Assign the calculated weightage to the current mapping
-    #     self.weightage = distributed_weightage
-
-    #     # Update existing mappings with the new distributed weightage
-    #     super().save(*args, **kwargs)
-    #     mappings.update(weightage=distributed_weightage)
+            raise ValidationError(
+                f"Total weightage for PLO '{self.plo}' in course '{self.course}' exceeds 100%. "
+                f"Current total: {total_weightage}%."
+            )
 
     def save(self, *args, **kwargs):
-        # Call clean to ensure validations are checked before saving
-        self.clean()
+        # Validate before saving
+        self.full_clean()
         super().save(*args, **kwargs)

@@ -1,8 +1,6 @@
 from django.contrib import admin
 from django import forms
 from django.http import JsonResponse
-from django.db import models
-from django.forms import ValidationError
 from django.urls import path
 from obesystem.models import ProgramLearningOutcome, CourseLearningOutcome, ProgramCLOMapping
 
@@ -50,24 +48,6 @@ class ProgramCLOMappingForm(forms.ModelForm):
             self.fields['plo'].queryset = ProgramLearningOutcome.objects.filter(program=self.instance.program)
         else:
             self.fields['plo'].queryset = ProgramLearningOutcome.objects.none()
-
-    def clean(self):
-        cleaned_data = super().clean()
-        program = cleaned_data.get('program')
-        course = cleaned_data.get('course')
-        weightage = cleaned_data.get('weightage')
-        clo = cleaned_data.get('clo')
-        
-        if program and course and clo:
-            # Calculate the total weightage for the CLO mappings of this course in this program
-            total_weightage = (
-                ProgramCLOMapping.objects
-                .filter(program=program, course=course)
-                .exclude(pk=self.instance.pk)
-                .aggregate(total=models.Sum('weightage'))['total'] or 0
-            )
-            if total_weightage + weightage > 100:
-                raise ValidationError("Total weightage for all CLO mappings in this course and program must not exceed 100%.")
 
 class ProgramCLOMappingAdmin(admin.ModelAdmin):
     form = ProgramCLOMappingForm
