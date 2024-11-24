@@ -63,7 +63,7 @@ class ProgramAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('custom_course_name','credit_hours','program','view_clos')
+    list_display = ('course_id','custom_course_name','credit_hours','program','view_clos')
     list_filter = ('program',)
     search_fields = ('name',)
 
