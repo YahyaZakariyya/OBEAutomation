@@ -18,30 +18,17 @@ def assign_student_permissions(section, student_user):
 
 def get_courses(request):
     program_id = request.GET.get('program_id')
-    courses = Course.objects.filter(programs__id=program_id)
-    data = [{'id': course.id, 'name': course.name} for course in courses]
-    return JsonResponse(data, safe=False)
+    if program_id:
+        courses = Course.objects.filter(programs__id=program_id)
+        data = [{'id': course.id, 'name': course.name} for course in courses]
+        return JsonResponse(data, safe=False)
+    return JsonResponse([], safe=False)  # Return an empty list if no program is selected
 
 # Custom form to filter the program choices dynamically in Django admin
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
-        # fields = '__all__'
         fields = ['program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Initially hide the course field by removing its choices
-        self.fields['course'].queryset = self.fields['course'].queryset.none()
-
-        if 'program' in self.data:
-            try:
-                program_id = int(self.data.get('program'))
-                self.fields['course'].queryset = Program.objects.get(id=program_id).courses.all()
-            except (ValueError, TypeError):
-                pass  # Invalid input; ignore
-        elif self.instance.pk:
-            self.fields['course'].queryset = self.instance.program.courses.all()
 
 class SectionAdmin(admin.ModelAdmin):
     form = SectionForm
