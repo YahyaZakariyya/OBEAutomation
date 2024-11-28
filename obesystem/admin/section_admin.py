@@ -4,40 +4,24 @@ from django.http import JsonResponse
 from django.urls import reverse, path
 from django.utils.html import format_html
 from django.shortcuts import get_object_or_404
-from obesystem.models import Section, Course, Assessment, AssessmentBreakdown
+from obesystem.models import Section, Course, Assessment
 from guardian.shortcuts import assign_perm, get_objects_for_user
+from guardian.admin import GuardedModelAdmin
 
 def assign_section_permissions(section, faculty_user):
-    # Assign object-level permissions
+    """
+    Assign section-level permissions to the faculty.
+    """
+    # Assign object-level permissions for the section
     assign_perm('obesystem.view_section', faculty_user, section)
 
-    # Query AssessmentBreakdown objects related to this Section
-    assessment_breakdowns = AssessmentBreakdown.objects.filter(section=section)
-    for assessment_breakdown in assessment_breakdowns:
-        assign_perm('obesystem.view_assessmentbreakdown', faculty_user, assessment_breakdown)
-        assign_perm('obesystem.change_assessmentbreakdown', faculty_user, assessment_breakdown)
-
-    # Query Assessment objects related to this Section
-    assessments = Assessment.objects.filter(section=section)
-    for assessment in assessments:
-        assign_perm('obesystem.view_assessment', faculty_user, assessment)
-        assign_perm('obesystem.add_assessment', faculty_user, assessment)
-        assign_perm('obesystem.change_assessment', faculty_user, assessment)
-        assign_perm('obesystem.delete_assessment', faculty_user, assessment)
-
 def assign_student_permissions(section, student_user):
-    # Assign object-level permission for students (only view)
-    assign_perm("obesystem.view_section", student_user, section)
-
-    # Query AssessmentBreakdown objects related to this Section
-    assessment_breakdowns = AssessmentBreakdown.objects.filter(section=section)
-    for assessment_breakdown in assessment_breakdowns:
-        assign_perm('obesystem.view_assessmentbreakdown', student_user, assessment_breakdown)
-
-    # Query Assessment objects related to this Section
-    assessments = Assessment.objects.filter(section=section)
-    for assessment in assessments:
-        assign_perm('obesystem.view_assessment', student_user, assessment)
+    """
+    Assign section-level permissions to the student.
+    """
+    # Assign view permission for the section
+    assign_perm('obesystem.view_section', student_user, section)
+    # assign_perm('obesystem.view_assessmentbreakdown', student_user, section)
 
 def get_courses(request):
     program_id = request.GET.get('program_id')
@@ -53,7 +37,7 @@ class SectionForm(forms.ModelForm):
         model = Section
         fields = ['program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status']
 
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(GuardedModelAdmin):
     form = SectionForm
 
     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty', 'view_assessments_button', 'create_assessment_button')
@@ -127,10 +111,20 @@ class SectionAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
     def save_model(self, request, obj, form, change):
+        """
+        Assign permissions for the faculty when saving the Section.
+        """
         super().save_model(request, obj, form, change)
         if obj.faculty:
             assign_section_permissions(obj, obj.faculty)
-        for student in obj.students.all():
-            assign_student_permissions(obj, student)
+
+    def save_related(self, request, form, formsets, change):
+        """
+        Assign permissions for students after the many-to-many relationships are saved.
+        """
+        super().save_related(request, form, formsets, change)
+        section = form.instance  # The saved Section instance
+        for student in section.students.all():
+            assign_student_permissions(section, student)
 
 admin.site.register(Section, SectionAdmin)
