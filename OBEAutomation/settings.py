@@ -44,6 +44,9 @@ INSTALLED_APPS = [
 
     # custom apps
     'obesystem.apps.ObesystemConfig',
+
+    # django guardian
+    'guardian',
 ]
 
 JAZZMIN_UI_TWEAKS = {
@@ -141,6 +144,11 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # Default
+    'guardian.backends.ObjectPermissionBackend',
+)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -189,3 +197,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ANONYMOUS_USER_ID = -1

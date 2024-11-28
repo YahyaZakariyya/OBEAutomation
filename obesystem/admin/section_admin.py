@@ -4,8 +4,17 @@ from django.http import JsonResponse
 from django.urls import reverse, path
 from django.utils.html import format_html
 from django.shortcuts import get_object_or_404
-
+from guardian.admin import GuardedModelAdmin
 from obesystem.models import Section, Course, Program, Assessment
+from guardian.shortcuts import assign_perm, get_objects_for_user
+
+def assign_section_permissions(section, faculty_user):
+    # Assign object-level permissions
+    assign_perm('obesystem.view_section', faculty_user, section)
+
+def assign_student_permissions(section, student_user):
+    # Assign object-level permission for students (only view)
+    assign_perm("obesystem.view_section", student_user, section)
 
 def get_courses(request):
     program_id = request.GET.get('program_id')
@@ -17,7 +26,8 @@ def get_courses(request):
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
-        fields = '__all__'
+        # fields = '__all__'
+        fields = ['program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,7 +45,6 @@ class SectionForm(forms.ModelForm):
 
 class SectionAdmin(admin.ModelAdmin):
     form = SectionForm
-    
 
     list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty', 'view_assessments_button', 'create_assessment_button')
     list_filter = ('semester', 'batch', 'year')
@@ -58,22 +67,36 @@ class SectionAdmin(admin.ModelAdmin):
 
     view_assessments_button.short_description = 'View Assessments'
     view_assessments_button.allow_tags = True
+
     def get_queryset(self, request):
+        queryset = super().get_queryset(request)
         if request.user.is_superuser:
-            return super().get_queryset(request)
-        return super().get_queryset(request).filter(faculty=request.user)
+            print("admin")
+            return queryset
+        # Filter based on object-level permissions
+        print("Faculty")
+        return queryset.filter(pk__in=get_objects_for_user(
+            request.user, 'obesystem.view_section', queryset
+        ))
 
-    def has_add_permission(self, request):
-        return request.user.is_superuser
-
-    def has_change_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-
+    def has_module_permission(self, request):
+        return True
+    
     def has_view_permission(self, request, obj=None):
-        return request.user.is_superuser or (obj is None or obj.faculty == request.user)
+        if request.user.is_superuser:
+            return True
+        if obj:
+            return request.user.has_perm('obesystem.view_section', obj)
+        return True
+    
+    # def has_add_permission(self, request):
+    #     return request.user.is_superuser
+
+    # def has_change_permission(self, request, obj=None):
+    #     return request.user.is_superuser
+
+    # def has_delete_permission(self, request, obj=None):
+    #     return request.user.is_superuser
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         section = get_object_or_404(Section, pk=object_id)
@@ -83,7 +106,6 @@ class SectionAdmin(admin.ModelAdmin):
         extra_context['view_assessments_url'] = reverse('admin:%s_%s_changelist' % (
             Assessment._meta.app_label, Assessment._meta.model_name)) + f'?section__id__exact={object_id}'
         
-
         return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
     
     class Media:
@@ -95,6 +117,12 @@ class SectionAdmin(admin.ModelAdmin):
             path('get-courses/', self.admin_site.admin_view(get_courses), name='get_courses'),
         ]
         return custom_urls + urls
-
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.faculty:
+            assign_section_permissions(obj, obj.faculty)
+        for student in obj.students.all():
+            assign_student_permissions(obj, student)
 
 admin.site.register(Section, SectionAdmin)
