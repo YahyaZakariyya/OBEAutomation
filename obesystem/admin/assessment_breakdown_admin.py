@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django import forms
 from obesystem.models import AssessmentBreakdown
+from guardian.shortcuts import get_objects_for_user
 
 # Custom form for validation in admin
 class AssessmentBreakdownForm(forms.ModelForm):
@@ -50,13 +51,50 @@ class AssessmentBreakdownAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        """
+        Restrict queryset to AssessmentBreakdowns related to Sections
+        the user has permissions for.
+        """
+        queryset = super().get_queryset(request)
+        if request.user.is_superuser:
+            return queryset
+        # Get sections the user has permission to view
+        sections = get_objects_for_user(request.user, 'obesystem.view_section')
+        # Filter AssessmentBreakdown by those sections
+        return queryset.filter(section__in=sections)
+
+    def has_module_permission(self, request):
+        return True
+    
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj:
+            return request.user.has_perm('obesystem.view_assessmentbreakdown', obj)
+        return True
+    
     def has_add_permission(self, request):
-        # Restrict add permission to prevent multiple entries per section
-        return super().has_add_permission(request)
+        """
+        Disable the ability to manually add AssessmentBreakdown from the everyone.
+        """
+        return False
 
     def has_change_permission(self, request, obj=None):
-        # Allow change permission only if the object exists
-        return super().has_change_permission(request, obj)
+        """
+        Allow faculty to change AssessmentBreakdown if they have the change permission
+        for the related Section.
+        """
+        if obj is None:  # For the changelist view
+            return True
+        # Check if the user has the required permission for the related section
+        return request.user.has_perm('obesystem.change_assessmentbreakdown', obj)
+    
+    def has_delete_permission(self, request, obj=None):
+        """
+        No one can delete AssessmentBreakdowns.
+        """
+        return False
 
     def save_model(self, request, obj, form, change):
         # Additional checks if needed before saving

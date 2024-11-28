@@ -1,34 +1,44 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const programField = $('#id_program');  // jQuery selector for Program field
-    const courseField = $('#id_course');    // jQuery selector for Course field
+document.addEventListener('DOMContentLoaded', function () {
+    const programField = $('#id_program');
+    const courseField = $('#id_course');
 
-    function fetchRelatedCourses(url, targetField) {
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                targetField.empty();  // Clear existing options
-                data.forEach(course => {
-                    const option = new Option(course.name, course.id, false, false);
-                    targetField.append(option);
-                });
-                targetField.trigger('change');  // Trigger change to update Select2 if in use
-            })
-            .catch(error => console.error("Error fetching courses:", error));
+    // Clear course field initially if no program is selected
+    if (!programField.val()) {
+        courseField.empty().trigger('change'); // Clear Select2 options
     }
 
-    // Event listener for Program field
-    programField.on('change', function() {
-        const programId = programField.val();
+    // When the program is changed
+    programField.on('change', function () {
+        const programId = programField.val(); // Get the selected program ID
+
+        // Clear the course field
+        courseField.empty(); // Clear existing options
+
         if (programId) {
-            const url = `/obesystem/section/get-courses/?program_id=${programId}`;
-            fetchRelatedCourses(url, courseField);
-            courseField.show();  // Show the course field after populating it
+            // Fetch courses for the selected program
+            fetch(`/obesystem/section/get-courses/?program_id=${programId}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((courses) => {
+                    // Populate the course field with new options
+                    courses.forEach((course) => {
+                        const newOption = new Option(course.name, course.id, false, false);
+                        courseField.append(newOption);
+                    });
+
+                    // Refresh the Select2 dropdown
+                    courseField.trigger('change');
+                })
+                .catch((error) => {
+                    console.error('Error fetching courses:', error);
+                });
         } else {
-            courseField.empty();  // Clear options if no program is selected
-            courseField.hide();   // Hide course field if no program is selected
+            // If no program is selected, ensure the dropdown is cleared
+            courseField.empty().trigger('change');
         }
     });
-
-    // Hide course dropdown initially
-    courseField.hide();
 });
