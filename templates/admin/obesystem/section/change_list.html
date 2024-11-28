@@ -1,0 +1,76 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list jazzmin %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'custom/css/cards.css' %}"> <!-- Custom CSS for cards -->
+
+    {% if cl.formset or action_form %}
+        <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {% endif %}
+    {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media.js }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a></li>
+        <li class="breadcrumb-item active">{{ cl.opts.verbose_name_plural|capfirst }}</li>
+    </ol>
+{% endblock %}
+
+{% block content_title %} {{ cl.opts.verbose_name_plural|capfirst }} {% endblock %}
+
+{% block coltype %}flex{% endblock %}
+
+{% block content %}
+
+{% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
+
+    {% block search %}
+        {% search_form cl %}
+    {% endblock %}
+
+<div class="card-container">
+    {% for result in cl.result_list %}
+    <div class="card">
+        <div class="card-header">
+            <h5>
+                <a href="{% url 'admin:obesystem_section_change' result.pk %}" class="view-section-link">
+                    {{ result.course }}
+                </a>
+            </h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Semester:</strong> {{ result.semester }}</p>
+            <p><strong>Section:</strong> {{ result.section }}</p>
+            <p><strong>Batch:</strong> {{ result.batch }}</p>
+            <p><strong>Year:</strong> {{ result.year }}</p>
+            <p><strong>Faculty:</strong> {{ result.faculty }}</p>
+        </div>
+        <div class="card-footer">
+            <a href="/obesystem/assessment/?section__id__exact={{ result.pk }}" class="icon-btn" title="Manage Assessments">
+                <i class="fas fa-cog"></i> <!-- Settings Icon -->
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% block pagination %}{% pagination cl %}{% endblock %}
+{% endblock %}
+
+{% block extrajs %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'jazzmin/js/change_list.js' %}"></script>
+{% endblock %}
+
