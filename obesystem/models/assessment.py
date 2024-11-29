@@ -18,7 +18,6 @@ class Assessment(models.Model):
     type = models.CharField(max_length=20, choices=ASSESSMENT_TYPES)
     weightage = models.FloatField(
         validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
-        help_text="Percentage contribution within the type's weightage (e.g., 25% of the total 15% for Assignments)."
     )
 
     def clean(self):

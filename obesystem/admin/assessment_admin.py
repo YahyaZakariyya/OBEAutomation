@@ -1,106 +1,81 @@
 from django.contrib import admin
 from django import forms
-from obesystem.admin.question_admin import QuestionInline
-from obesystem.models import Assessment, Section, Question
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from django.urls import path
+from obesystem.models import Assessment, Section
+from guardian.shortcuts import get_objects_for_user
+from guardian.admin import GuardedModelAdmin
 
-class AssessmentForm(forms.ModelForm):
-    class Meta:
-        model = Assessment
-        fields = ['title', 'section', 'date', 'type', 'weightage']
+class AssessmentAdmin(GuardedModelAdmin):
+    # form = AssessmentForm
+    list_display = ['title', 'section', 'date', 'type', 'weightage']
+    fields = ['title', 'section', 'date', 'type', 'weightage']
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super(AssessmentForm, self).__init__(*args, **kwargs)
-
-        if self.user is not None:
-            # Superuser can see all sections
-            if self.user.is_superuser:
-                self.fields['section'].queryset = Section.objects.all()
-            else:
-                # Regular faculty member can only see their sections
-                self.fields['section'].queryset = Section.objects.filter(faculty=self.user)
-
-        if 'section' in self.initial:
-            self.fields['section'].widget.attrs['readonly'] = True
-            self.fields['section'].widget.attrs['disabled'] = 'disabled'
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path(
-                'fetch-inline-rows/',
-                self.admin_site.admin_view(self.fetch_inline_rows),
-                name='fetch-inline-rows'
-            ),
-        ]
-        return custom_urls + urls
-
-    def fetch_inline_rows(self, request):
-        """Endpoint to fetch new inline rows via AJAX."""
-        template_name = "admin/edit_inline/tabular.html"
-        context = {
-            "inline_admin_formset": self.get_inline_instances(request, None)[0].get_formset(
-                None, change=False
-            ),
-        }
-        rendered = render_to_string(template_name, context, request=request)
-        return JsonResponse({"html": rendered})
-
-class AssessmentAdmin(admin.ModelAdmin):
-    form = AssessmentForm
-    inlines = [QuestionInline]
-
-    def save_related(self, request, form, formsets, change):
+    def get_form(self, request, obj=None, **kwargs):
         """
-        Override save_related to ensure M2M fields (like 'clo') are handled after the main object is saved.
+        Customize the form to filter sections based on the user's permissions.
         """
-        # Save the parent object and inlines
-        super().save_related(request, form, formsets, change)
-
-        # Iterate through formsets to save M2M fields for Question objects
-        for formset in formsets:
-            if formset.model == Question:
-                for inline_form in formset.forms:
-                    if inline_form.instance.pk:  # Ensure the object has been saved
-                        inline_form.save_m2m()  # Save M2M relationships (CLOs)
-
-    # def get_form(self, request, obj=None, **kwargs):
-    #     form_class = super().get_form(request, obj, **kwargs)
-    #     # Passing the user through kwargs
-    #     class FormWithUser(form_class):
-    #         def __init__(self, *args, **kwargs):
-    #             kwargs['user'] = request.user
-    #             super(FormWithUser, self).__init__(*args, **kwargs)
-
-    #     return FormWithUser
-    
-    def get_inline_instances(self, request, obj=None):
-        # Only show the inlines if the assessment has been created
-        if obj is None:
-            return []  # Don't show the inline questions during assessment creation
-        return super().get_inline_instances(request, obj)
+        form = super().get_form(request, obj, **kwargs)
         
+        # Superusers can see all sections
+        if request.user.is_superuser:
+            form.base_fields['section'].queryset = Section.objects.all()
+        else:
+            # Faculty members can only see sections they have `view_section` permission for
+            allowed_sections = get_objects_for_user(request.user, 'obesystem.view_section', klass=Section)
+            form.base_fields['section'].queryset = allowed_sections
+
+        return form
 
     def get_queryset(self, request):
-        # Superuser can see all assessments
+        """
+        Restrict queryset to Assessments the user has permissions for.
+        """
+        queryset = super().get_queryset(request)
         if request.user.is_superuser:
-            return super(AssessmentAdmin, self).get_queryset(request)
-        else:
-            # Regular faculty member can only see their assessments
-            qs = super(AssessmentAdmin, self).get_queryset(request)
-            return qs.filter(section__faculty=request.user)
+            return queryset
+        return queryset.filter(
+            pk__in=get_objects_for_user(request.user, 'obesystem.view_assessment', queryset)
+        )
 
-    def save_model(self, request, obj, form, change):
-        # Check if the user is a superuser
-        if not request.user.is_superuser and obj.section.faculty != request.user:
-            raise forms.ValidationError("You cannot assign assessments to a section you don't own.")
-        super().save_model(request, obj, form, change)
+    def has_module_permission(self, request):
+        return True
+    
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj:
+            return request.user.has_perm('obesystem.view_assessment', obj)
+        return True
+    
+    def has_add_permission(self, request, obj=None):
+        """
+        Allow faculty to add Assessment only if they have the add permission
+        for the related Section.
+        """
+        # Only allow faculty to add assessments if they have the required permission
+        if obj is None:  # For the changelist or adding a new object
+            # Ensure the user has add permission for any section
+            return request.user.has_perm('obesystem.add_assessment')
 
-    # def has_module_permission(self, request):
-    #     # Hide the course from the admin index page and sidebar
-    #     return False
+        # Check if the user has the required permission for the related object
+        return request.user.has_perm('obesystem.add_assessment', obj)
 
+    def has_change_permission(self, request, obj=None):
+        """
+        Allow faculty to change Assessment if they have the change permission
+        for the related Section.
+        """
+        if obj is None:  # For the changelist view
+            return True
+        # Check if the user has the required permission for the related section
+        return request.user.has_perm('obesystem.change_assessment', obj)
+    
+    def has_delete_permission(self, request, obj=None):
+        """
+        Allow faculty to delete Assessments if they have delete permission
+        for the related section.
+        """
+        if obj is None:  # For the changelist view
+            return True
+        return request.user.has_perm('obesystem.delete_assessment', obj)
+    
 admin.site.register(Assessment, AssessmentAdmin)
