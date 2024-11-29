@@ -21,7 +21,6 @@ def assign_student_permissions(section, student_user):
     """
     # Assign view permission for the section
     assign_perm('obesystem.view_section', student_user, section)
-    # assign_perm('obesystem.view_assessmentbreakdown', student_user, section)
 
 def get_courses(request):
     program_id = request.GET.get('program_id')
@@ -31,7 +30,6 @@ def get_courses(request):
         return JsonResponse(data, safe=False)
     return JsonResponse([], safe=False)  # Return an empty list if no program is selected
 
-# Custom form to filter the program choices dynamically in Django admin
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section

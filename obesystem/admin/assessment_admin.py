@@ -117,9 +117,7 @@ class AssessmentAdmin(GuardedModelAdmin):
         for the related section.
         """
         if obj is None:  # For the changelist view
-            print("Delete IF")
             return True
-        print(request.user.has_perm('obesystem.delete_assessment', obj))
         return request.user.has_perm('obesystem.delete_assessment', obj)
     
     # def get_model_perms(self, request):

@@ -14,8 +14,3 @@ def assign_permissions_for_assessment_breakdown(sender, instance, created, **kwa
             # Assign permissions to the faculty for the new assessment breakdown
             assign_perm('obesystem.view_assessmentbreakdown', faculty_user, instance)
             assign_perm('obesystem.change_assessmentbreakdown', faculty_user, instance)
-
-        # Assign view permission to students of the section
-        students = instance.section.students.all()
-        for student in students:
-            assign_perm('obesystem.view_assessmentbreakdown', student, instance)
