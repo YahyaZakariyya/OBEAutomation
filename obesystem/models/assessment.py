@@ -66,3 +66,8 @@ class Assessment(models.Model):
 
     def __str__(self):
         return f"{self.section.course.name} - {self.title} ({self.type})"
+    
+    class Meta:
+        permissions = [
+            ('can_add_question', 'Can add question to this assessment'),
+        ]

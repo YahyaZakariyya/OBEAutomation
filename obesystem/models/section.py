@@ -62,6 +62,9 @@ class Section(models.Model):
                 name='unique_section_constraint'
             )
         ]
+        permissions = [
+            ('can_add_assessment', 'Can add assessment to this section'),
+        ]
 
     def clean(self):
         # Ensure that the selected program is associated with the selected course
