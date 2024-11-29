@@ -1,7 +1,36 @@
-from django.db.models.signals import post_delete, m2m_changed, pre_delete
+from django.db.models.signals import post_delete, m2m_changed, pre_delete, post_save
 from django.dispatch import receiver
 from obesystem.models import Section, AssessmentBreakdown, Assessment
 from guardian.shortcuts import remove_perm, assign_perm
+
+@receiver(post_save, sender=Section)
+def configure_add_assessment_permission(sender, instance, created, **kwargs):
+    """
+    Assign `add_assessment` permission to the faculty member for Assessments related to their section.
+    """
+    # Handle new section creation
+    if created:
+        if instance.faculty:
+            print(f"Granting `add_assessment` permission to faculty: {instance.faculty}")
+            # Grant permission to add Assessments for this section
+            assign_perm('obesystem.add_assessment', instance.faculty)
+    else:
+        # Handle faculty changes in the Section
+        old_faculty = instance._old_faculty if hasattr(instance, '_old_faculty') else None
+        new_faculty = instance.faculty
+
+        # Remove permission from the old faculty
+        if old_faculty and old_faculty != new_faculty:
+            print(f"Revoking `add_assessment` permission from old faculty: {old_faculty}")
+            remove_perm('obesystem.add_assessment', old_faculty)
+
+        # Add permission for the new faculty
+        if new_faculty and old_faculty != new_faculty:
+            print(f"Granting `add_assessment` permission to new faculty: {new_faculty}")
+            assign_perm('obesystem.add_assessment', new_faculty)
+
+        # Save the updated faculty reference for the section
+        instance._old_faculty = new_faculty
 
 @receiver(m2m_changed, sender=Section.students.through)
 def assign_student_permissions_on_change(sender, instance, action, pk_set, **kwargs):

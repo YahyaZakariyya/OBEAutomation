@@ -12,7 +12,6 @@ def assign_permissions_for_assessment(sender, instance, created, **kwargs):
         # Assign CRUD permissions to the faculty for the assessment
         faculty_user = instance.section.faculty
         if faculty_user:
-            assign_perm('obesystem.add_assessment', faculty_user, instance)
             assign_perm('obesystem.view_assessment', faculty_user, instance)
             assign_perm('obesystem.change_assessment', faculty_user, instance)
             assign_perm('obesystem.delete_assessment', faculty_user, instance)
@@ -30,7 +29,6 @@ def remove_permissions_for_assessment(sender, instance, **kwargs):
     # Remove faculty permissions
     faculty_user = instance.section.faculty
     if faculty_user:
-        remove_perm('obesystem.add_assessment', faculty_user, instance)
         remove_perm('obesystem.view_assessment', faculty_user, instance)
         remove_perm('obesystem.change_assessment', faculty_user, instance)
         remove_perm('obesystem.delete_assessment', faculty_user, instance)
