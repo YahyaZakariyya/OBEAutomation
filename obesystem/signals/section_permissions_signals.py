@@ -6,31 +6,31 @@ from guardian.shortcuts import remove_perm, assign_perm
 @receiver(post_save, sender=Section)
 def configure_add_assessment_permission(sender, instance, created, **kwargs):
     """
-    Assign `add_assessment` permission to the faculty member for Assessments related to their section.
+    Assign `can_add_assessment` permission to the faculty member for Assessments related to their section.
     """
-    # Handle new section creation
     if created:
+        # Grant permission to add assessments for the new section
         if instance.faculty:
-            print(f"Granting `add_assessment` permission to faculty: {instance.faculty}")
-            # Grant permission to add Assessments for this section
-            assign_perm('obesystem.add_assessment', instance.faculty)
+            print(f"Granting `can_add_assessment` permission to faculty: {instance.faculty}")
+            assign_perm('obesystem.can_add_assessment', instance.faculty, instance)
     else:
-        # Handle faculty changes in the Section
-        old_faculty = instance._old_faculty if hasattr(instance, '_old_faculty') else None
+        # Handle changes to the faculty member in an existing section
+        try:
+            old_faculty = Section.objects.get(pk=instance.pk).faculty  # Retrieve the original faculty member
+        except Section.DoesNotExist:
+            old_faculty = None
+
         new_faculty = instance.faculty
 
-        # Remove permission from the old faculty
+        # Revoke permission from the old faculty if it has changed
         if old_faculty and old_faculty != new_faculty:
-            print(f"Revoking `add_assessment` permission from old faculty: {old_faculty}")
-            remove_perm('obesystem.add_assessment', old_faculty)
+            print(f"Revoking `can_add_assessment` permission from old faculty: {old_faculty}")
+            remove_perm('obesystem.can_add_assessment', old_faculty, instance)
 
-        # Add permission for the new faculty
+        # Grant permission to the new faculty if it has changed
         if new_faculty and old_faculty != new_faculty:
-            print(f"Granting `add_assessment` permission to new faculty: {new_faculty}")
-            assign_perm('obesystem.add_assessment', new_faculty)
-
-        # Save the updated faculty reference for the section
-        instance._old_faculty = new_faculty
+            print(f"Granting `can_add_assessment` permission to new faculty: {new_faculty}")
+            assign_perm('obesystem.can_add_assessment', new_faculty, instance)
 
 @receiver(m2m_changed, sender=Section.students.through)
 def assign_student_permissions_on_change(sender, instance, action, pk_set, **kwargs):

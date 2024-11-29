@@ -15,6 +15,8 @@ def assign_permissions_for_assessment(sender, instance, created, **kwargs):
             assign_perm('obesystem.view_assessment', faculty_user, instance)
             assign_perm('obesystem.change_assessment', faculty_user, instance)
             assign_perm('obesystem.delete_assessment', faculty_user, instance)
+            # Assign `can_add_question` permission to the faculty for this assessment
+            assign_perm('obesystem.can_add_question', faculty_user, instance)
 
         # Assign view permissions to students for the assessment
         students = instance.section.students.all()

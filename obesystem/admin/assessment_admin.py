@@ -1,11 +1,12 @@
 from django.contrib import admin
-from django import forms
 from obesystem.models import Assessment, Section
 from guardian.shortcuts import get_objects_for_user
 from guardian.admin import GuardedModelAdmin
+from obesystem.admin.question_admin import QuestionInline
 
 class AssessmentAdmin(GuardedModelAdmin):
-    # form = AssessmentForm
+    inlines = [QuestionInline]
+
     list_display = ['title', 'section', 'date', 'type', 'weightage']
     fields = ['title', 'section', 'date', 'type', 'weightage']
 
@@ -15,13 +16,15 @@ class AssessmentAdmin(GuardedModelAdmin):
         """
         form = super().get_form(request, obj, **kwargs)
         
-        # Superusers can see all sections
-        if request.user.is_superuser:
-            form.base_fields['section'].queryset = Section.objects.all()
-        else:
-            # Faculty members can only see sections they have `view_section` permission for
-            allowed_sections = get_objects_for_user(request.user, 'obesystem.view_section', klass=Section)
-            form.base_fields['section'].queryset = allowed_sections
+        # Check if the 'section' field exists in the form
+        if 'section' in form.base_fields:
+            # Superusers can see all sections
+            if request.user.is_superuser:
+                form.base_fields['section'].queryset = Section.objects.all()
+            else:
+                # Faculty members can only see sections they have `view_section` permission for
+                allowed_sections = get_objects_for_user(request.user, 'obesystem.view_section', klass=Section)
+                form.base_fields['section'].queryset = allowed_sections
 
         return form
 
@@ -48,16 +51,16 @@ class AssessmentAdmin(GuardedModelAdmin):
     
     def has_add_permission(self, request, obj=None):
         """
-        Allow faculty to add Assessment only if they have the add permission
+        Allow faculty to add Assessment only if they have the `can_add_assessment` permission
         for the related Section.
         """
-        # Only allow faculty to add assessments if they have the required permission
         if obj is None:  # For the changelist or adding a new object
-            # Ensure the user has add permission for any section
-            return request.user.has_perm('obesystem.add_assessment')
+            # Ensure the user has add permission for at least one section
+            allowed_sections = get_objects_for_user(request.user, 'obesystem.can_add_assessment', klass=Section)
+            return allowed_sections.exists()
 
-        # Check if the user has the required permission for the related object
-        return request.user.has_perm('obesystem.add_assessment', obj)
+        # Check if the user has the required permission for the related section of this object
+        return request.user.has_perm('obesystem.can_add_assessment', obj.section)
 
     def has_change_permission(self, request, obj=None):
         """
