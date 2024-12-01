@@ -1,38 +1,92 @@
 from django.contrib import admin
-from obesystem.models import Question, CourseLearningOutcome
-from django import forms
+from obesystem.models import Question, Section, CourseLearningOutcome
+from guardian.shortcuts import get_objects_for_user
+from django.forms.models import BaseInlineFormSet
+from guardian.admin import GuardedModelAdmin
+from django.utils.html import format_html
+from django.urls import reverse
 
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = "__all__"
-
+class QuestionInlineFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.assessment_id:
-            course = self.instance.assessment.section.course  # Get the course from the related section
-            print(course)
-            self.fields["clo"].queryset = CourseLearningOutcome.objects.filter(course=course)
-            print(self.fields["clo"].queryset)
+        super(QuestionInlineFormSet, self).__init__(*args, **kwargs)
+        # Get the parent Assessment instance
+        assessment = self.instance
+        section = None
+        course = None
+
+        if assessment and assessment.pk:
+            # Editing an existing Assessment
+            section = assessment.section
+            course = section.course
         else:
-            self.fields["clo"].queryset = CourseLearningOutcome.objects.none()
+            # Adding a new Assessment, get section from the form data
+            data = kwargs.get('data', None)
+            if data:
+                # The field name may vary; adjust 'section' accordingly
+                section_id = data.get('section')
+                if section_id:
+                    try:
+                        section = Section.objects.get(pk=section_id)
+                        course = section.course
+                    except Section.DoesNotExist:
+                        pass
+
+        # Filter the CLO queryset for each form in the formset
+        for form in self.forms:
+            clo_field = form.fields.get('clo')
+            if clo_field and course:
+                clo_field.queryset = CourseLearningOutcome.objects.filter(course=course)
+            else:
+                clo_field.queryset = CourseLearningOutcome.objects.none()
 
 
 class QuestionInline(admin.TabularInline):
     model = Question
-    form = QuestionForm
-    extra = 1  # Number of blank forms displayed for adding questions
-    # readonly_fields = ['number']
-    fields = ['number', 'marks', 'clo'] 
+    formset = QuestionInlineFormSet
+
+    extra = 1
+    fields = ['marks', 'clo', 'permission_link']
+    readonly_fields = ['permission_link']  # Make the permission_link field read-only
     verbose_name = "Question"
     verbose_name_plural = "Questions"
-    
-    class Media:
-        js = ("admin/js/question_admin.js",)  # Include the JavaScript file
 
-class QuestionAdmin(admin.ModelAdmin):
-    # readonly_fields = ['number']  # Makes the question number visible but not editable
-    list_display = ('assessment', 'number', 'marks')
-    list_filter = ('assessment',)
+    def permission_link(self, instance):
+        if instance.pk:
+            url = reverse('admin:obesystem_question_change', args=[instance.pk])
+            return format_html('<a href="{}" target="_blank">Manage Permissions</a>', url)
+        else:
+            return 'Save and continue editing to manage permissions.'
+
+    permission_link.short_description = 'Permissions'  # Set column header
+    
+    def get_queryset(self, request):
+        """
+        Customize queryset based on object-level permissions.
+        """
+        queryset = super().get_queryset(request)
+        if request.user.is_superuser:
+            return queryset
+        return queryset.filter(assessment__section__in=get_objects_for_user(
+            request.user, 'obesystem.view_section', klass=Section
+        ))
+    
+    def has_view_permission(self, request, obj=None):
+        return True
+    
+    def has_add_permission(self, request, obj=None):
+        return request.user.has_perm('obesystem.can_add_question', obj)
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.has_perm('obesystem.change_assessment', obj)
+
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.has_perm('obesystem.delete_assessment', obj)
+
+    
+class QuestionAdmin(GuardedModelAdmin):
+    # Hide the Question model from the admin index page
+    def has_module_permission(self, request):
+        return False  # This hides the model from the admin index
 
 admin.site.register(Question, QuestionAdmin)
