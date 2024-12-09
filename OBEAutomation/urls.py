@@ -1,22 +1,12 @@
-"""
-URL configuration for OBEAutomation project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+from obesystem.views import AssessmentDataAPI, UpdateScoresAPI
+from obesystem.views import ReactAppView  # This is the view that returns index.html
 
 urlpatterns = [
+    path('app/', ReactAppView.as_view(), name='react-app'),
+    re_path(r'^app/.*$', ReactAppView.as_view()),  # catch-all for SPA routes
+    path('api/get-assessment-data/', AssessmentDataAPI.as_view(), name='get-assessment-data'),
+    path('api/update-scores/', UpdateScoresAPI.as_view(), name='update-scores'),
     path('', admin.site.urls),
 ]

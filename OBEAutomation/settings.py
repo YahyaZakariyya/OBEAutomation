@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,9 +46,22 @@ INSTALLED_APPS = [
     # custom apps
     'obesystem.apps.ObesystemConfig',
 
+    # DRF
+    'rest_framework',
+
     # django guardian
     'guardian',
 ]
+
+# For REST Framework default authentication
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
 
 JAZZMIN_UI_TWEAKS = {
     "navbar_small_text": False,
@@ -188,7 +202,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    # BASE_DIR / "static",
+    # BASE_DIR / "obesystem" / "frontend" / "build" / "static",  # React's static files
+    os.path.join(BASE_DIR, 'frontend', 'build', 'static')
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
