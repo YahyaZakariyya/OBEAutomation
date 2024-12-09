@@ -18,3 +18,4 @@ class StudentQuestionScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentQuestionScore
         fields = ['student_id', 'question_id', 'marks_obtained']
+        
