@@ -3,13 +3,20 @@ from obesystem.models import Assessment, Section
 from guardian.shortcuts import get_objects_for_user
 from guardian.admin import GuardedModelAdmin
 from obesystem.admin.question_admin import QuestionInline
+from django.utils.html import format_html
 
-class AssessmentAdmin(GuardedModelAdmin):
+class AssessmentAdmin(admin.ModelAdmin):
     inlines = [QuestionInline]
 
-    list_display = ['title', 'section', 'date', 'type', 'weightage']
+    list_display = ['title', 'section', 'date', 'type', 'weightage', 'manage_marks_button']
     fields = ['title', 'section', 'date', 'type', 'weightage']
+    
+    def manage_marks_button(self, obj):
+        return format_html('<a href="/app/assessment?id={}" target="_blank">Edit Scores</a>', obj.id)
 
+    manage_marks_button.short_description = 'Manage Marks'  # Column header in admin
+    manage_marks_button.allow_tags = True
+        
     def get_form(self, request, obj=None, **kwargs):
         """
         Customize the form to filter sections based on the user's permissions.

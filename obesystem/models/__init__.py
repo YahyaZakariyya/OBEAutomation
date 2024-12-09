@@ -8,5 +8,6 @@ from .plo import ProgramLearningOutcome
 from .program import Program
 from .question import Question
 from .section import Section
+from .student_question_score import StudentQuestionScore
 
-__all__ = ['AssessmentBreakdown', 'Assessment', 'CourseLearningOutcome', 'Course', 'CustomUser', 'ProgramCLOMapping', 'ProgramLearningOutcome', 'Program', 'Question', 'Section']
+__all__ = ['AssessmentBreakdown', 'Assessment', 'CourseLearningOutcome', 'Course', 'CustomUser', 'ProgramCLOMapping', 'ProgramLearningOutcome', 'Program', 'Question', 'Section', 'StudentQuestionScore']

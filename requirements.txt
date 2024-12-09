@@ -3,6 +3,7 @@ Django==5.0.4
 django-extensions==3.2.3
 django-guardian==2.4.0
 django-jazzmin==3.0.0
+djangorestframework==3.15.2
 pydotplus==2.0.2
 pyparsing==3.1.2
 sqlparse==0.5.0
