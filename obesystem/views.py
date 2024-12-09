@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -5,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import Assessment, Question, StudentQuestionScore
 from .serializers import QuestionSerializer, StudentSerializer, StudentQuestionScoreSerializer
 
-class AssessmentDataAPI(APIView):
+class MarksAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -16,7 +17,7 @@ class AssessmentDataAPI(APIView):
         questions = Question.objects.filter(assessment=assessment)
         question_data = QuestionSerializer(questions, many=True).data
 
-        # Get students enrolled in that assessment’s section
+        # Get students
         students = assessment.section.students.all()
         student_data = StudentSerializer(students, many=True).data
 
@@ -30,42 +31,52 @@ class AssessmentDataAPI(APIView):
             'scores': score_data
         })
 
-class UpdateScoresAPI(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request):
-        # Expecting data in the form:
-        # { "scores": [{ "student_id": x, "question_id": y, "score": z }, ...] }
-        data = request.data.get('marks_obtained', [])
+        # Expecting data in the form: { "scores": [{ "student_id": x, "question_id": y, "marks_obtained": z }, ...] }
+        data = request.data.get('scores', [])
+        errors = []
+
         for score_item in data:
             student_id = score_item['student_id']
             question_id = score_item['question_id']
-            new_score = score_item['marks_obtained']
+            marks_obtained = score_item['marks_obtained']
 
-            # Update the marks_obtained in the DB
-            StudentQuestionScore.objects.filter(student_id=student_id, question_id=question_id).update(marks_obtained=new_score)
+            try:
+                question = Question.objects.get(id=question_id)
 
-        return Response({"status": "success"})
+                # Validate marks
+                if marks_obtained < 0:
+                    errors.append({
+                        "student_id": student_id,
+                        "question_id": question_id,
+                        "error": "Marks cannot be negative."
+                    })
+                elif marks_obtained > question.marks:
+                    errors.append({
+                        "student_id": student_id,
+                        "question_id": question_id,
+                        "error": f"Marks cannot exceed {question.marks}."
+                    })
 
-import os
-from django.conf import settings
-from django.http import HttpResponse
-from django.views import View
+                # If no errors, update the database
+                if not errors:
+                    StudentQuestionScore.objects.filter(
+                        student_id=student_id,
+                        question_id=question_id
+                    ).update(marks_obtained=marks_obtained)
 
-class ReactAppView(View):
-    def get(self, request, *args, **kwargs):
-        # Construct the path to your index.html file
-        index_file = os.path.join(
-            settings.BASE_DIR,
-            'frontend',  # folder name where your React app is
-            'build',     # the build output folder
-            'index.html'
-        )
-        
-        # Check if index.html exists
-        if not os.path.exists(index_file):
-            return HttpResponse("Build not found. Did you run npm run build?", status=501)
-        
-        with open(index_file, 'r', encoding='utf-8') as file:
-            html_content = file.read()
-        return HttpResponse(html_content)
+            except Question.DoesNotExist:
+                errors.append({
+                    "student_id": student_id,
+                    "question_id": question_id,
+                    "error": "Question not found."
+                })
+
+        if errors:
+            return Response({"status": "error", "errors": errors}, status=400)
+
+        return Response({"status": "success"}, status=200)
+
+def edit_scores_view(request):
+    # This view just returns the HTML template
+    return render(request, 'obesystem/edit_scores.html')

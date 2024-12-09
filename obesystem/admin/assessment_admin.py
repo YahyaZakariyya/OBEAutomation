@@ -12,7 +12,7 @@ class AssessmentAdmin(admin.ModelAdmin):
     fields = ['title', 'section', 'date', 'type', 'weightage']
     
     def manage_marks_button(self, obj):
-        return format_html('<a href="/app/assessment?id={}" target="_blank">Edit Scores</a>', obj.id)
+        return format_html('<a href="/edit-scores/?id={}" target="_blank">Manage Marks</a>', obj.id)
 
     manage_marks_button.short_description = 'Manage Marks'  # Column header in admin
     manage_marks_button.allow_tags = True
