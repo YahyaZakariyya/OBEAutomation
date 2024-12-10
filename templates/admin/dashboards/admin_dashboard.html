@@ -1,0 +1,124 @@
+<div class="content">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Programs Overview</div>
+                <div class="card-body">
+                    <p>Total Programs: <strong>15</strong></p>
+                    <p>Active Programs: <strong>12</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Programs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Courses Overview</div>
+                <div class="card-body">
+                    <p>Total Courses: <strong>50</strong></p>
+                    <p>Active Courses: <strong>45</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Courses</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Sections Overview</div>
+                <div class="card-body">
+                    <p>Total Sections: <strong>120</strong></p>
+                    <p>Active Sections: <strong>110</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Sections</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">CLO Performance</div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="cloChart"></canvas>
+                    </div>
+                    <div class="view-more">
+                        <a href="#">Detailed CLO Reports</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Recent Activities</div>
+                <div class="card-body">
+                    <ul>
+                        <li>Added new program: AI Basics</li>
+                        <li>Updated CLO for Data Science</li>
+                        <li>Created new section: CS202-B</li>
+                    </ul>
+                    <div class="view-more">
+                        <a href="#">View All Activities</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">User Management</div>
+                <div class="card-body">
+                    <p>Total Users: <strong>200</strong></p>
+                    <p>Admin Users: <strong>5</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Users</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">System Configurations</div>
+                <div class="card-body">
+                    <ul>
+                        <li><a href="#">Configure CLOs</a></li>
+                        <li><a href="#">Program Weightings</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('cloChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            datasets: [{
+                label: 'CLO Attainment',
+                data: [70, 85, 75, 90, 95],
+                backgroundColor: 'rgba(47, 128, 237, 0.2)',
+                borderColor: 'rgba(47, 128, 237, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>

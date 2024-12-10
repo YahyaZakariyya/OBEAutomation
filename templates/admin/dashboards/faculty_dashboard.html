@@ -1,0 +1,125 @@
+<div class="content">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Course: Data Science</div>
+                <div class="card-body">
+                    <p>Assessments: <strong>5</strong></p>
+                    <p>Students Enrolled: <strong>60</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Course: Web Development</div>
+                <div class="card-body">
+                    <p>Assessments: <strong>7</strong></p>
+                    <p>Students Enrolled: <strong>45</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Course: Machine Learning</div>
+                <div class="card-body">
+                    <p>Assessments: <strong>4</strong></p>
+                    <p>Students Enrolled: <strong>35</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view-more mt-3">
+        <a href="#">View All Courses</a>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">CLO Performance Summary</div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="cloChart"></canvas>
+                    </div>
+                    <div class="view-more">
+                        <a href="#">Detailed CLO Analysis</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Recent Activities</div>
+                <div class="card-body">
+                    <ul>
+                        <li>Graded Assignment 3 (Data Science)</li>
+                        <li>Added Quiz 2 (Web Development)</li>
+                        <li>Updated CLO for Machine Learning</li>
+                    </ul>
+                    <div class="view-more">
+                        <a href="#">View All Activities</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('cloChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Data Science', 'Web Development', 'Machine Learning'],
+            datasets: [{
+                label: 'CLO Attainment',
+                data: [85, 75, 90],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(75, 192, 192, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `CLO Attainment: ${context.raw}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+</script>
