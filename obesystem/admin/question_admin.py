@@ -79,7 +79,6 @@ class QuestionInline(admin.TabularInline):
     def has_change_permission(self, request, obj=None):
         return request.user.has_perm('obesystem.change_assessment', obj)
 
-
     def has_delete_permission(self, request, obj=None):
         return request.user.has_perm('obesystem.delete_assessment', obj)
 
@@ -88,5 +87,13 @@ class QuestionAdmin(GuardedModelAdmin):
     # Hide the Question model from the admin index page
     def has_module_permission(self, request):
         return False  # This hides the model from the admin index
+    
+    def has_delete_permission(self, request, obj=None):
+        """
+        Allow deletion of questions when cascading from an assessment.
+        """
+        if obj and hasattr(obj, 'assessment'):
+            return request.user.has_perm('obesystem.delete_assessment', obj.assessment)
+        return True
 
 admin.site.register(Question, QuestionAdmin)
