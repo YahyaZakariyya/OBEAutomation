@@ -1,6 +1,6 @@
 from django.db.models.signals import post_delete, m2m_changed, post_save, pre_save
 from django.dispatch import receiver
-from obesystem.models import Section, AssessmentBreakdown, CustomUser
+from obesystem.models import Section, AssessmentBreakdown, CustomUser, Question, StudentQuestionScore
 from guardian.shortcuts import assign_perm
 from django.contrib.auth.models import Group
 
@@ -36,6 +36,7 @@ def handle_section_creation_or_update(sender, instance, created, **kwargs):
         assessment_breakdowns = AssessmentBreakdown.objects.filter(section=instance)
         for breakdown in assessment_breakdowns:
             assign_perm('obesystem.view_assessmentbreakdown', faculty_group, breakdown)
+            assign_perm('obesystem.change_assessmentbreakdown', faculty_group, breakdown)
             assign_perm('obesystem.view_assessmentbreakdown', students_group, breakdown)
 
         # Add faculty and students to their groups
@@ -66,6 +67,15 @@ def handle_students_membership_change(sender, instance, action, pk_set, **kwargs
         for student_id in pk_set:
             student = instance.students.get(pk=student_id)
             student.groups.add(students_group)
+            # Get all questions related to the section's assessments
+            questions = Question.objects.filter(assessment__section=instance)
+            for question in questions:
+                # Create StudentQuestionScore for the student for each question
+                StudentQuestionScore.objects.get_or_create(
+                    student=student,
+                    question=question,
+                    defaults={'marks_obtained': 0}  # Default marks can be set to 0
+                )
     elif action == "post_remove":
         # Remove students from the group
         for student_id in pk_set:
@@ -73,6 +83,11 @@ def handle_students_membership_change(sender, instance, action, pk_set, **kwargs
                 # Fetch the student directly from the database
                 student = CustomUser.objects.get(pk=student_id)
                 student.groups.remove(students_group)
+                # Get all related StudentQuestionScore entries and delete them
+                StudentQuestionScore.objects.filter(
+                    student=student,
+                    question__assessment__section=instance
+                ).delete()
             except CustomUser.DoesNotExist:
                 # Log the error if the student does not exist in the database (very unlikely in this case)
                 print(f"CustomUser with ID {student_id} does not exist.")

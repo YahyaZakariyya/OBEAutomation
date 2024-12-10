@@ -5,7 +5,7 @@ from guardian.admin import GuardedModelAdmin
 from obesystem.admin.question_admin import QuestionInline
 from django.utils.html import format_html
 
-class AssessmentAdmin(admin.ModelAdmin):
+class AssessmentAdmin(GuardedModelAdmin):
     inlines = [QuestionInline]
 
     list_display = ['title', 'section', 'date', 'type', 'weightage', 'manage_marks_button']
