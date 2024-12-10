@@ -20,453 +20,112 @@
         {% widthratio dashboard_list|length 2 1 as middle %}
     {% endif %}
 
-    {% if request.user.is_superuser %}
-        <!-- Display for Admin -->
-        <!-- Static Content for Total Stats and Graphs -->
-        <div class="col-12">
-            <div class="row">
-                <!-- Total Students -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
-                        <i class="bi bi-mortarboard display-4 me-3"></i>
-                        <div>
-                            <h6>Total Students</h6>
-                            <p class="h2">40,223</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Total Employees -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
-                        <i class="bi bi-people-fill display-4 me-3"></i>
-                        <div>
-                            <h6>Total Employees</h6>
-                            <p class="h2">52</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Total Programs -->
-                <div class="col-lg-4 col-md-12 mb-4">
-                    <div class="d-flex align-items-center justify-content-center bg-light p-3 rounded">
-                        <i class="bi bi-journal-bookmark display-4 me-3"></i>
-                        <div>
-                            <h6>Total Programs</h6>
-                            <p class="h2">04</p>
-                        </div>
-                    </div>
-                </div>
+    {% block dashboard %}
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>Welcome, {{user.first_name}}</h1>
             </div>
-
-            <!-- Dropdown for Selecting Program -->
-            <div class="col-lg-12 mb-4">
-                <div class="bg-light p-3 rounded">
-                    <h6>Select Program</h6>
-                    <select id="programSelect" class="form-select">
-                        <option value="program1">Program 1</option>
-                        <option value="program2">Program 2</option>
-                        <option value="program3">Program 3</option>
-                        <option value="program4">Program 4</option>
-                    </select>
+            {% if user.role == 'admin' %}
+                {% include "admin/dashboards/admin_dashboard.html" %}
+            {% elif user.role == 'faculty' %}
+                {% include "admin/dashboards/faculty_dashboard.html" %}
+            {% elif user.role == 'student' %}
+                {% include "admin/dashboards/student_dashboard.html" %}
+            {% else %}
+                <div class="error-message">
+                    <p>You do not have permission to view this dashboard.</p>
                 </div>
-            </div>
-
-            <!-- Bar Chart for PLOs -->
-            <div class="col-lg-12 mb-4" id="ploChartContainer">
-                <div class="bg-light p-3 rounded">
-                    <h6 id="programTitle">PLOs Weightage Distribution for Program 1</h6>
-                    <canvas id="ploChart" style="max-height: 400px;"></canvas>
-                    <p>Total weightage of all PLOs for the selected program is 100%</p> <!-- Message -->
-                </div>
-            </div>
-
-            <!-- Bar Chart for CLOs (Initially Hidden) -->
-            <div class="col-lg-12 mb-4" id="cloChartContainer" style="display:none;">
-                <div class="bg-light p-3 rounded">
-                    <h6 id="cloChartTitle">CLOs Weightage Distribution for <span id="selectedPLO"></span> of Program 1</h6>
-                    <canvas id="cloChart" style="max-height: 400px;"></canvas>
-                    <button class="btn btn-secondary mt-3" id="backToPLOs">Back to PLOs</button>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Static Graph for PO Mapping Status -->
-                <div class="col-lg-6 mb-4">
-                    <div class="bg-light p-3 rounded">
-                        <h6>PO Mapping Status</h6>
-                        <canvas style="max-height: 500px;" id="poMappingChart" height="300"></canvas>
-                        <button class="btn btn-primary mt-3">View Details</button>
-                    </div>
-                </div>
-
-                <!-- Static Graph for Courses Status -->
-                <div class="col-lg-6 mb-4">
-                    <div class="bg-light p-3 rounded">
-                        <h6>Courses Status</h6>
-                        <canvas style="max-height: 500px;" id="coursesStatusChart" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Static Graph for Student Enrollment Over Time -->
-            <div class="col-lg-12 mb-4">
-                <div class="bg-light p-3 rounded">
-                    <h6>Student Enrollment Over Time</h6>
-                    <canvas style="max-height: 500px;" id="enrollmentChart" height="300"></canvas>
-                </div>
-            </div>
-
-            <!-- Courses Status Table
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="bg-light p-3 rounded">
-                        <h6>Courses Status</h6>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Course</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>14EC390 - Survey Lab II</td>
-                                    <td><span class="badge bg-success">Approved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>EC 4053 - Engineering Acoustics</td>
-                                    <td><span class="badge bg-danger">Not Assigned</span></td>
-                                </tr>
-                                <tr>
-                                    <td>EC 4054 - Remote Sensing</td>
-                                    <td><span class="badge bg-danger">Not Assigned</span></td>
-                                </tr>
-                                <tr>
-                                    <td>EC 4051 - Wireless Sensor Networks</td>
-                                    <td><span class="badge bg-danger">Not Assigned</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- Dynamic Django Logic for the Dashboard App List -->
-        <!-- {% get_side_menu using="app_list" as dashboard_list %}
-        {% if dashboard_list %}
-            {% widthratio dashboard_list|length 2 1 as middle %}
-        {% endif %}
-
-        <div class="row text-center">
-            {% for app in dashboard_list %}
-                {% for model in app.models %}
-                    <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                        <div class="bg-light p-3 rounded">
-                            <h6>{{ model.name }}</h6>
-                            {% if model.add_url %}
-                                <a href="{{ model.add_url }}" class="btn btn-success w-100">ADD</a>
-                            {% endif %}
-                            {% if model.url %}
-                                <a href="{{ model.url }}" class="btn btn-primary w-100 mt-2">CHANGE</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endfor %}
-        </div> -->
+            {% endif %}
+        </div>
+    {% endblock %}
     
-    {% comment %} {% elif request.user.groups.filter(name='Faculty').exists %}
-        <!-- Display for Faculty -->
-        <h2>Welcome Faculty Member!</h2>
-        <div class="faculty-dashboard">
-            <!-- Faculty-specific content, like assessments, courses, etc. -->
-        </div>
-
-    {% elif request.user.groups.filter(name='Student').exists %}
-        <!-- Display for Students -->
-        <h2>Welcome Student!</h2>
-        <div class="student-dashboard">
-            <!-- Student-specific content, like enrolled courses, progress, etc. -->
-        </div> {% endcomment %}
-    {% else %}
-        <!-- Default dashboard content if no specific role -->
-        <h2>Welcome to the Dashboard!</h2>
-        <div class="general-dashboard">
-            <!-- General content for users without specific roles -->
-        </div>
-    {% endif %}
-
-    <!-- Chart.js Script -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // PO Mapping Status Chart
-        var ctxPO = document.getElementById('poMappingChart').getContext('2d');
-        var poMappingChart = new Chart(ctxPO, {
-            type: 'bar', // Bar chart for PO Mapping
-            data: {
-                labels: ['BSCS', 'BSIT', 'BSCY', 'BSAI', 'BSEE'], // Departments
-                datasets: [{
-                    label: 'PO Completed',
-                    data: [13, 12, 12, 7, 9], // Example data
-                    backgroundColor: ['rgba(75, 192, 192, 0.2)'],
-                    borderColor: ['rgba(75, 192, 192, 1)'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Courses Status Pie Chart
-        var ctxCourses = document.getElementById('coursesStatusChart').getContext('2d');
-        var coursesStatusChart = new Chart(ctxCourses, {
-            type: 'pie', // Pie chart for Courses Status
-            data: {
-                labels: ['Approved', 'No Course Outlay', 'Submitted', 'Not Assigned'],
-                datasets: [{
-                    data: [10, 5, 15, 20], // Example data
-                    backgroundColor: ['rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)'],
-                    borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
-                    borderWidth: 1
-                }]
-            }
-        });
-
-        // Student Enrollment Over Time (Line Chart)
-        var ctxEnrollment = document.getElementById('enrollmentChart').getContext('2d');
-        var enrollmentChart = new Chart(ctxEnrollment, {
-            type: 'line',
-            data: {
-                labels: ['2019', '2020', '2021', '2022', '2023'], // Example years
-                datasets: [
-                    {
-                        label: 'Computer Science',
-                        data: [1000, 1200, 1500, 1600, 1700], // Example data for CS
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Electrical Engineering',
-                        data: [800, 900, 950, 1000, 1100], // Example data for EE
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Mechanical Engineering',
-                        data: [600, 650, 700, 750, 800], // Example data for ME
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Civil Engineering',
-                        data: [500, 550, 600, 620, 630], // Example data for CE
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Students' // Y-axis title
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Year' // X-axis title
-                        }
-                    }
-                }
-            }
-        });
-
-        // Sample static data for 4 programs, PLOs, and CLOs
-        const programsData = {
-            program1: {
-                PLOs: ['PLO 1', 'PLO 2', 'PLO 3', 'PLO 4', 'PLO 5'],
-                PLOWeights: [30, 20, 35, 10, 5], // The PLOs sum to 100%
-                CLOs: {
-                    'PLO 1': [40, 30, 30], // The CLOs sum to 100% for PLO 1
-                    'PLO 2': [20, 30, 50],
-                    'PLO 3': [25, 25, 25, 25],
-                    'PLO 4': [50, 50],
-                    'PLO 5': [100]
-                }
-            },
-            program2: {
-                PLOs: ['PLO 1', 'PLO 2', 'PLO 3', 'PLO 4', 'PLO 5', 'PLO 6'],
-                PLOWeights: [25, 25, 25, 15, 5, 5], // The PLOs sum to 100%
-                CLOs: {
-                    'PLO 1': [50, 50],
-                    'PLO 2': [20, 30, 50],
-                    'PLO 3': [25, 25, 50],
-                    'PLO 4': [40, 60],
-                    'PLO 5': [60, 40],
-                    'PLO 6': [100]
-                }
-            },
-        };
-
-        // Light color palette for charts
-        const lightColors = [
-            'rgba(173, 216, 230, 0.6)', // Light Blue
-            'rgba(255, 182, 193, 0.6)', // Light Pink
-            'rgba(144, 238, 144, 0.6)', // Light Green
-            'rgba(255, 222, 173, 0.6)', // Light Orange
-            'rgba(221, 160, 221, 0.6)', // Light Purple
-            'rgba(255, 255, 224, 0.6)'  // Light Yellow
-        ];
-
-        // Initialize Charts
-        var ploCtx = document.getElementById('ploChart').getContext('2d');
-        var cloCtx = document.getElementById('cloChart').getContext('2d');
-        var ploChart;
-        var cloChart;
-
-        function createPLOChart(program) {
-            const data = programsData[program];
-            const ploLabels = data.PLOs;
-            const ploData = data.PLOWeights; // Use the PLO weight data
-
-            // Update program title
-            document.getElementById('programTitle').innerText = `PLOs Weightage Distribution for ${program}`;
-
-            // Find the max PLO weightage to set as max value for X-axis
-            const maxPLOWeightage = Math.max(...ploData);
-
-            if (ploChart) {
-                ploChart.destroy(); // Destroy previous chart instance
-            }
-
-            ploChart = new Chart(ploCtx, {
-                type: 'bar',
-                data: {
-                    labels: ploLabels,
-                    datasets: [{
-                        label: 'PLO Weightage',
-                        data: ploData,
-                        backgroundColor: ploLabels.map((_, index) => lightColors[index % lightColors.length]), // Use predefined light colors
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    onClick: function (e) {
-                        var activePoint = ploChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-
-                        if (activePoint.length > 0) {
-                            var clickedPLO = ploLabels[activePoint[0].index];
-                            createCLOChart(program, clickedPLO);
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false, // Allow max-height setting to work
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: maxPLOWeightage, // Set max value based on PLO weightage
-                            title: {
-                                display: true,
-                                text: 'Weightage (%)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function createCLOChart(program, plo) {
-            const data = programsData[program];
-            const cloData = data.CLOs[plo]; // Get the CLO data for the selected PLO
-
-            // Ensure cloData exists and is an array
-            if (!cloData || cloData.length === 0) {
-                alert('No CLO data found for the selected PLO');
-                return;
-            }
-
-            // Hide the PLO chart and display the CLO chart container
-            document.getElementById('ploChartContainer').style.display = 'none';
-            document.getElementById('cloChartContainer').style.display = 'block';
-
-            // Update the title to reflect the selected PLO and program
-            document.getElementById('selectedPLO').innerText = plo;
-            document.getElementById('cloChartTitle').innerText = `CLOs Weightage Distribution for ${plo} of ${program}`;
-
-            // Check if the cloChart instance exists and destroy it before drawing a new one
-            if (cloChart) {
-                cloChart.destroy(); // Destroy previous chart instance
-            }
-
-            // Create a new CLO chart with fresh data
-            cloChart = new Chart(cloCtx, {
-                type: 'bar', // Horizontal bar chart for CLOs
-                data: {
-                    labels: cloData.map((_, i) => `CLO ${i + 1}`), // Create labels like 'CLO 1', 'CLO 2', etc.
-                    datasets: [{
-                        label: `CLO Weightage for ${plo}`, // Set label for CLOs
-                        data: cloData, // Use the actual CLO data
-                        backgroundColor: cloData.map((_, index) => lightColors[index % lightColors.length]), // Use light colors
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Ensure chart adapts to given height
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100, // Total weightage is 100%
-                            title: {
-                                display: true,
-                                text: 'Weightage (%)'
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Debugging to check if the correct CLO data is loaded
-            console.log('Loaded CLO Data for PLO:', plo, 'is', cloData);
-        }
-
-
-        // Event listener for the dropdown to switch between programs
-        document.getElementById('programSelect').addEventListener('change', function () {
-            createPLOChart(this.value);
-            document.getElementById('cloChartContainer').style.display = 'none'; // Hide CLO chart when program changes
-            document.getElementById('ploChartContainer').style.display = 'block'; // Show PLO chart again
-        });
-
-        // Back to PLOs button
-        document.getElementById('backToPLOs').addEventListener('click', function () {
-            document.getElementById('ploChartContainer').style.display = 'block'; // Show PLO chart
-            document.getElementById('cloChartContainer').style.display = 'none'; // Hide CLO chart
-        });
-
-        // Create chart for the default program on page load
-        createPLOChart('program1');
-
-    </script>
-
 {% endblock %}
+
+<!-- Extend in templates/admin/base_site.html -->
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2A3F54;
+            --accent-color: #F7C942;
+            --background-color: #F9FAFB;
+            --card-background: #FFFFFF;
+            --text-color: #34495E;
+            --muted-text-color: #7F8C8D;
+            --hover-color: #F4F6F8;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-background);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-background);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        .view-more {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .view-more a {
+            color: var(--primary-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .view-more a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
