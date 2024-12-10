@@ -1,92 +1,91 @@
-from django.db.models.signals import post_delete, m2m_changed, pre_delete, post_save
+from django.db.models.signals import post_delete, m2m_changed, post_save, pre_save
 from django.dispatch import receiver
-from obesystem.models import Section, AssessmentBreakdown, Assessment
-from guardian.shortcuts import remove_perm, assign_perm
+from obesystem.models import Section, AssessmentBreakdown, CustomUser
+from guardian.shortcuts import assign_perm
+from django.contrib.auth.models import Group
+
+@receiver(pre_save, sender=Section)
+def track_old_faculty(sender, instance, **kwargs):
+    """
+    Tracks the old faculty before the section is saved.
+    """
+    if instance.pk:  # Only if the instance already exists
+        old_faculty = Section.objects.filter(pk=instance.pk).first().faculty
+        instance._old_faculty = old_faculty  # Store the old faculty in a temporary attribute
 
 @receiver(post_save, sender=Section)
-def configure_add_assessment_permission(sender, instance, created, **kwargs):
+def handle_section_creation_or_update(sender, instance, created, **kwargs):
     """
-    Assign `can_add_assessment` permission to the faculty member for Assessments related to their section.
+    Handles permissions when a Section is created or updated.
     """
+    faculty_group_name = f"faculty_section_{instance.pk}"
+    students_group_name = f"students_section_{instance.pk}"
+
+    # Get or create the groups
+    faculty_group, _ = Group.objects.get_or_create(name=faculty_group_name)
+    students_group, _ = Group.objects.get_or_create(name=students_group_name)
+
     if created:
-        # Grant permission to add assessments for the new section
+        # Assign permissions for faculty group
+        assign_perm('obesystem.view_section', faculty_group, instance)
+        assign_perm('obesystem.can_add_assessment', faculty_group, instance)
+
+        # Assign permissions for students group
+        assign_perm('obesystem.view_section', students_group, instance)
+
+        assessment_breakdowns = AssessmentBreakdown.objects.filter(section=instance)
+        for breakdown in assessment_breakdowns:
+            assign_perm('obesystem.view_assessmentbreakdown', faculty_group, breakdown)
+            assign_perm('obesystem.view_assessmentbreakdown', students_group, breakdown)
+
+        # Add faculty and students to their groups
         if instance.faculty:
-            print(f"Granting `can_add_assessment` permission to faculty: {instance.faculty}")
-            assign_perm('obesystem.can_add_assessment', instance.faculty, instance)
+            instance.faculty.groups.add(faculty_group)
+        for student in instance.students.all():
+            student.groups.add(students_group)
     else:
-        # Handle changes to the faculty member in an existing section
-        try:
-            old_faculty = Section.objects.get(pk=instance.pk).faculty  # Retrieve the original faculty member
-        except Section.DoesNotExist:
-            old_faculty = None
+        # Handle faculty change
+        old_faculty = getattr(instance, '_old_faculty', None)  # Get the old faculty from pre_save
+        if old_faculty and old_faculty != instance.faculty:
+            if old_faculty:
+                old_faculty.groups.remove(faculty_group)  # Remove old faculty from the group
+            if instance.faculty:
+                instance.faculty.groups.add(faculty_group)
 
-        new_faculty = instance.faculty
-
-        # Revoke permission from the old faculty if it has changed
-        if old_faculty and old_faculty != new_faculty:
-            print(f"Revoking `can_add_assessment` permission from old faculty: {old_faculty}")
-            remove_perm('obesystem.can_add_assessment', old_faculty, instance)
-
-        # Grant permission to the new faculty if it has changed
-        if new_faculty and old_faculty != new_faculty:
-            print(f"Granting `can_add_assessment` permission to new faculty: {new_faculty}")
-            assign_perm('obesystem.can_add_assessment', new_faculty, instance)
 
 @receiver(m2m_changed, sender=Section.students.through)
-def assign_student_permissions_on_change(sender, instance, action, pk_set, **kwargs):
+def handle_students_membership_change(sender, instance, action, pk_set, **kwargs):
     """
-    Assign permissions to students when they are added to a section.
+    Updates student permissions when students are added or removed from a Section.
     """
-    if action == "post_add":  # Trigger after students are added
-        students = instance.students.filter(pk__in=pk_set)
-        for student in students:
-            assessment_breakdowns = AssessmentBreakdown.objects.filter(section=instance)
-            for breakdown in assessment_breakdowns:
-                assign_perm('obesystem.view_assessmentbreakdown', student, breakdown)
+    students_group_name = f"students_section_{instance.pk}"
+    students_group = Group.objects.get(name=students_group_name)
+
+    if action == "post_add":
+        # Add students to the group
+        for student_id in pk_set:
+            student = instance.students.get(pk=student_id)
+            student.groups.add(students_group)
+    elif action == "post_remove":
+        # Remove students from the group
+        for student_id in pk_set:
+            try:
+                # Fetch the student directly from the database
+                student = CustomUser.objects.get(pk=student_id)
+                student.groups.remove(students_group)
+            except CustomUser.DoesNotExist:
+                # Log the error if the student does not exist in the database (very unlikely in this case)
+                print(f"CustomUser with ID {student_id} does not exist.")
+
 
 @receiver(post_delete, sender=Section)
-def cleanup_faculty_permissions_on_section_delete(sender, instance, **kwargs):
+def handle_section_deletion(sender, instance, **kwargs):
     """
-    Remove permissions for students and faculty when a Section is deleted.
+    Cleans up groups and permissions when a Section is deleted.
     """
-    # Remove permissions for faculty
-    if instance.faculty:
-        print(f"Removing permissions for faculty: {instance.faculty.username}")
-        remove_perm('obesystem.view_section', instance.faculty, instance)
-        assessment_breakdowns = AssessmentBreakdown.objects.filter(section=instance)
-        for breakdown in assessment_breakdowns:
-            remove_perm('obesystem.view_assessmentbreakdown', instance.faculty, breakdown)
+    faculty_group_name = f"faculty_section_{instance.pk}"
+    students_group_name = f"students_section_{instance.pk}"
 
-        assessments = Assessment.objects.filter(section=instance)
-        for assessment in assessments:
-            remove_perm('obesystem.view_assessment', instance.faculty, assessment)
-            remove_perm('obesystem.add_assessment', instance.faculty, assessment)
-            remove_perm('obesystem.change_assessment', instance.faculty, assessment)
-            remove_perm('obesystem.delete_assessment', instance.faculty, assessment)
-
-    print("Permissions cleanup complete.")
-
-@receiver(pre_delete, sender=Section)
-def cleanup_students_permissions_on_section_delete(sender, instance, **kwargs):
-    """
-    Remove permissions for students and faculty when a Section is deleted.
-    """
-    
-    # Remove permissions for students
-    students = instance.students.all()  # Get all related students
-    print(f"Students for Section {instance.id}: {students}")
-
-    for student in students:
-        print(f"Removing permissions for student: {student.username}")
-        # Remove view permission for this section
-        remove_perm('obesystem.view_section', student, instance)
-
-        # Remove permissions for related AssessmentBreakdown
-        assessment_breakdowns = AssessmentBreakdown.objects.filter(section=instance)
-        for breakdown in assessment_breakdowns:
-            remove_perm('obesystem.view_assessmentbreakdown', student, breakdown)
-
-        # Remove permissions for related Assessments
-        assessments = Assessment.objects.filter(section=instance)
-        for assessment in assessments:
-            remove_perm('obesystem.view_assessment', student, assessment)
+    # Delete the groups, which automatically removes all associated permissions
+    Group.objects.filter(name=faculty_group_name).delete()
+    Group.objects.filter(name=students_group_name).delete()
