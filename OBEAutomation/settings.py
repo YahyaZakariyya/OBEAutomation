@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # custom apps
     'obesystem.apps.ObesystemConfig',
+    'api.apps.ApiConfig',
 
     # DRF
     'rest_framework',

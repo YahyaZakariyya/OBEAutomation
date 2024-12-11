@@ -5,6 +5,7 @@ from obesystem.views.reporting import student_clo_performance_view, faculty_clo_
 
 
 urlpatterns = [
+    path('api/', include('api.urls')),
     path('student-clo-performance/', student_clo_performance_view, name='student-clo-performance'),
     path('faculty-clo-dashboard/', faculty_clo_dashboard, name='faculty_clo_dashboard'),
     path('api/faculty-clo-analysis/', FacultyCLOAnalysisAPI.as_view(), name='faculty_clo_analysis_api'),
@@ -13,5 +14,4 @@ urlpatterns = [
     path("api/plo-performance/", PLOPerformanceAPI.as_view(), name="plo-performance-api"),
     path('edit-scores/', edit_scores_view, name='edit-scores'),
     path('', admin.site.urls),
-
 ]
