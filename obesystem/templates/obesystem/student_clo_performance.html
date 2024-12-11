@@ -1,0 +1,192 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="header">
+        <h2>CLO Performance Analysis</h2>
+        <p>Student ID: {{ student_id }}</p>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+        <h4>Filters</h4>
+        <form id="filterForm">
+            <input type="hidden" id="student_id" value="{{ student_id }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="section" class="form-label">Section</label>
+                    <select id="section" name="section" class="form-select">
+                        <option value="">All Sections</option>
+                        {% for section in sections %}
+                            <option value="{{ section.id }}" {% if section.id|stringformat:"s" == section_id %}selected{% endif %}>
+                                {{ section }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="program" class="form-label">Program</label>
+                    <select id="program" name="program" class="form-select">
+                        <option value="">All Programs</option>
+                        {% for program in programs %}
+                            <option value="{{ program.id }}">{{ program.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="button" class="btn btn-primary" id="applyFilters">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- CLO Performance Chart -->
+    <div class="chart-container">
+        <h4>CLO Performance Summary</h4>
+        <canvas id="cloChart"></canvas>
+    </div>
+
+    <!-- PLO Performance Chart -->
+    <div class="chart-container">
+        <h4>PLO Performance Summary</h4>
+        <canvas id="ploChart"></canvas>
+    </div>
+
+    <!-- Detailed CLO Analysis Table -->
+    <div class="table-responsive">
+        <h4>Detailed CLO Analysis</h4>
+        <table class="table table-bordered" id="cloTable">
+            <thead>
+                <tr>
+                    <th>CLO Code</th>
+                    <th>Description</th>
+                    <th>Attained %</th>
+                    <th>Total Marks</th>
+                    <th>Obtained Marks</th>
+                    <th>Assessment Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let cloChartInstance = null; // Keep a reference to the CLO chart
+        let ploChartInstance = null; // Keep a reference to the PLO chart
+
+        function updateChartsAndTable(sectionId) {
+            const studentId = {{ request.user.id }}; // Use the logged-in student's ID
+        
+            // CLO Chart Update
+            fetch(`/api/clo-performance/?student_id=${studentId}&section_id=${sectionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (cloChartInstance) cloChartInstance.destroy();
+        
+                    const cloCtx = document.getElementById('cloChart').getContext('2d');
+                    const labels = data.map(item => item.name);
+                    const values = data.map(item => item.attainment);
+        
+                    cloChartInstance = new Chart(cloCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'CLO Attainment (%)',
+                                data: values,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { position: 'top' } },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+        
+                    const cloTableBody = document.querySelector('#cloTable tbody');
+                    cloTableBody.innerHTML = '';
+                    data.forEach(clo => {
+                        const row = `
+                            <tr>
+                                <td>${clo.code}</td>
+                                <td>${clo.description}</td>
+                                <td>${clo.attainment}%</td>
+                                <td>${clo.total_marks}</td>
+                                <td>${clo.obtained_marks}</td>
+                                <td>${clo.assessments.length ? clo.assessments.join(', ') : 'No assessments mapped'}</td>
+                            </tr>`;
+                        cloTableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                });
+        }
+        
+        document.getElementById('applyFilters').addEventListener('click', () => {
+            const sectionId = document.getElementById('section').value;
+            updateChartsAndTable(sectionId);
+        });
+        
+        // Initial load with default section
+        updateChartsAndTable('');
+        </script>
+{% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2A3F54;
+            --accent-color: #F7C942;
+            --background-color: #F9FAFB;
+            --card-bg-color: #FFFFFF;
+            --text-color: #34495E;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-panel {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            margin-bottom: 40px;
+        }
+
+        .btn-download {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+
+        .btn-download:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+    </style>
+{% endblock %}

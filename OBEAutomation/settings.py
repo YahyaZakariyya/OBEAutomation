@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # custom apps
     'obesystem.apps.ObesystemConfig',
+    'api.apps.ApiConfig',
 
     # DRF
     'rest_framework',
@@ -95,7 +96,7 @@ JAZZMIN_UI_TWEAKS = {
 }
 
 JAZZMIN_SETTINGS = {
-    "show_ui_builder": True,
+    "show_ui_builder": False,
     "site_title": "OBE Automation",
     "site_header": "OBE Automation",
     "site_logo": "images/logo.png",
