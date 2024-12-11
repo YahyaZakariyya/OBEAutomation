@@ -29,6 +29,17 @@ class AssessmentBreakdown(models.Model):
         self.full_clean()  # Perform validation before saving
         super().save(*args, **kwargs)
 
+    def get_assessment_types(self):
+        """Return all assessment types and their weightages as a dictionary."""
+        return {
+            'assignment': self.assignment_weightage,
+            'quiz': self.quiz_weightage,
+            'lab': self.lab_weightage,
+            'mid': self.mid_weightage,
+            'final': self.final_weightage,
+            'project': self.project_weightage,
+        }
+
     def __str__(self):
         return f"Assessment Breakdown for {self.section}"
 
