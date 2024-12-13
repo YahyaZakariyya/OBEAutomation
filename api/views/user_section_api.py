@@ -4,12 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from obesystem.models import Section
 from guardian.shortcuts import get_objects_for_user
 
-class StudentSectionsAPI(APIView):
+class SectionsAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
         sections = get_objects_for_user(user, 'view_section', Section)
 
-        data = [{'id': section.id, 'name': f"{section.course.name} - {section.semester}"} for section in sections]
+        data = [{'id': section.id, 'name': f"{section.course.name} - {section.semester}{section.section}"} for section in sections]
         return Response(data)

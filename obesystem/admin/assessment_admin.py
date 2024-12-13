@@ -44,13 +44,13 @@ class AssessmentAdmin(GuardedModelAdmin):
                 allowed_sections = get_objects_for_user(request.user, 'obesystem.view_section', klass=Section)
                 form.base_fields['section'].queryset = allowed_sections
         
-        section_id = request.GET.get('section_id__exact')  # Retrieve section_id from GET
-        if section_id and not obj:  # Adding a new object from filtered view
-            form.base_fields['section'].initial = section_id  # Pre-fill section
-            form.base_fields['section'].disabled = True  # Lock section field
-            form.base_fields.pop('section', None)
-        elif obj:  # Editing an existing object
-            form.base_fields['section'].disabled = True  # Lock section field
+        # section_id = request.GET.get('section_id__exact')  # Retrieve section_id from GET
+        # if section_id and not obj:  # Adding a new object from filtered view
+        #     form.base_fields['section'].initial = section_id  # Pre-fill section
+        #     form.base_fields['section'].disabled = True  # Lock section field
+        #     form.base_fields.pop('section', None)
+        # elif obj:  # Editing an existing object
+        #     form.base_fields['section'].disabled = True  # Lock section field
         return form
 
     def get_queryset(self, request):

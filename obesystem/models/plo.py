@@ -26,7 +26,7 @@ class ProgramLearningOutcome(models.Model):
         total_weightage = sum(plo.weightage for plo in ProgramLearningOutcome.objects.filter(program=self.program).exclude(id=self.id))
 
         if total_weightage+self.weightage > 100:
-            raise ValidationError(f"The total weightage for PLOs in the program {self.program.name} cannot exceed 100%. Current total: {total_weightage}%. Remaining: {total_weightage%100}%")
+            raise ValidationError(f"The total weightage for PLOs in the program {self.program.name} cannot exceed 100%. Current total: {total_weightage}%. Remaining: {100 - total_weightage}%")
 
     def __str__(self):
         return f"PLO {self.PLO}: {self.heading}:"

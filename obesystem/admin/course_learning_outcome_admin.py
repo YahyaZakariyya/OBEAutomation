@@ -20,7 +20,7 @@ class CourseLearningOutcomeAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         # Hide the course from the admin index page and sidebar
-        return False
+        return True
 
 admin.site.register(CourseLearningOutcome, CourseLearningOutcomeAdmin)
 
