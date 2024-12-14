@@ -115,10 +115,10 @@ class CLOPerformanceAPI(APIView):
                 for score in question.studentquestionscore_set.filter(student_id=student.id)
             ) if questions.exists() else 0
 
-            attainment = (
-                (Decimal(obtained_marks) / Decimal(total_marks)) * 100
+            attainment = round(
+                (float(obtained_marks) / float(total_marks)) * 100
                 if total_marks > 0 else Decimal(100)
-            )
+            ,2)
 
             data.append({
                 "name": clo.heading,
