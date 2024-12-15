@@ -81,3 +81,17 @@ def faculty_result_view(request):
     }
 
     return render(request, 'obesystem/faculty_result.html', context)
+
+@login_required
+def student_result_view(request):
+    student = request.user  # Get the logged-in faculty member
+
+    # Fetch only sections visible to this student (using object-level permissions if applicable)
+    user_sections = get_objects_for_user(student, 'view_section', Section)
+
+    context = {
+        **site.each_context(request),  # Includes admin context like available_apps
+        'sections': user_sections,
+    }
+
+    return render(request, 'obesystem/student_result.html', context)
