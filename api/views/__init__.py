@@ -6,3 +6,4 @@ from .student_final_result import StudentFinalResultAPI
 from .faculty_final_result import FacultyFinalResultsAPI
 from .student_result_details_api import StudentResultDetailsAPI
 from .faculty_result_details_api import FacultyResultDetailsAPI
+from .student_result_view import StudentResultsView
