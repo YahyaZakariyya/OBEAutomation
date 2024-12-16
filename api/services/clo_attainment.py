@@ -1,5 +1,6 @@
 from django.db.models import Sum, F
-from obesystem.models import Assessment, Question, StudentQuestionScore, CourseLearningOutcome
+from assessments.models import Assessment, Question, StudentQuestionScore
+from outcomes.models import CourseLearningOutcome
 
 def compute_clo_attainment(student, section, assessment_type=None):
     # Filter assessments for the section (and optionally by type)

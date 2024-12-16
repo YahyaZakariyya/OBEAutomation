@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from obesystem.models import Section
+from sections.models import Section
 from api.services import compute_clo_attainment_for_faculty
 
 class FacultyCLOAttainment(APIView):

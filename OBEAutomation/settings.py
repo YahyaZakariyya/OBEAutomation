@@ -43,7 +43,13 @@ INSTALLED_APPS = [
     'django_extensions',
 
     # custom apps
-    'obesystem.apps.ObesystemConfig',
+    'users.apps.UsersConfig',
+    'programs.apps.ProgramsConfig',
+    'courses.apps.CoursesConfig',
+    'outcomes.apps.OutcomesConfig',
+    'sections.apps.SectionsConfig',
+    'assessments.apps.AssessmentsConfig',
+    'results.apps.ResultsConfig',
     'api.apps.ApiConfig',
 
     # DRF
@@ -104,15 +110,15 @@ JAZZMIN_SETTINGS = {
     "site_brand": "OBE Automation",
     "site_favicon": "images/favicon.ico",
     "icons": {
-        "obesystem.Assessment": "fas fa-check-circle",
-        "obesystem.CourseLearningOutcome": "fas fa-graduation-cap",
-        "obesystem.ProgramLearningOutcome": "fas fa-university",
-        "obesystem.Question": "fas fa-question-circle",
-        "obesystem.Course": "fas fa-book",
-        "obesystem.Section": "fas fa-th-list",
-        "obesystem.Program": "fas fa-university",
-        "obesystem.CustomUser": "fas fa-user",
-        "obesystem.ProgramCLOMapping":"fas fa-graduation-cap",
+        "assessments.Assessment": "fas fa-check-circle",
+        "outcomes.CourseLearningOutcome": "fas fa-graduation-cap",
+        "outcomes.ProgramLearningOutcome": "fas fa-university",
+        "assessments.Question": "fas fa-question-circle",
+        "courses.Course": "fas fa-book",
+        "sections.Section": "fas fa-th-list",
+        "programs.Program": "fas fa-university",
+        "users.CustomUser": "fas fa-user",
+        "outcomes.ProgramCLOMapping":"fas fa-graduation-cap",
         "auth.Group": "fas fa-users",
     },
 }
@@ -182,7 +188,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'obesystem.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
