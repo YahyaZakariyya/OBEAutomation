@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from obesystem.models import Section, Question, StudentQuestionScore
+from sections.models import Section
+from assessments.models import Question, StudentQuestionScore
 from guardian.shortcuts import get_objects_for_user
 
 class FacultyResultDetailsAPI(APIView):

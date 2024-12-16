@@ -1,9 +1,7 @@
 from django.db.models import Sum
-from obesystem.models.section import Section
-from obesystem.models.assessment import Assessment
-from obesystem.models.question import Question
-from obesystem.models.student_question_score import StudentQuestionScore
-from obesystem.models.clo import CourseLearningOutcome
+from sections.models import Section
+from assessments.models import Assessment, Question, StudentQuestionScore
+from outcomes.models import CourseLearningOutcome
 
 def calculate_student_results(section_id, student_id):
     # Retrieve the section and student

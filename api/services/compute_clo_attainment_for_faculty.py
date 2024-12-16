@@ -1,5 +1,5 @@
-from django.db.models import Sum
-from obesystem.models import Assessment, Question, StudentQuestionScore, CourseLearningOutcome
+from assessments.models import Question, StudentQuestionScore
+from outcomes.models import CourseLearningOutcome
 
 def compute_clo_attainment_for_faculty(faculty_user, section, assessment_type=None):
     # Validate that faculty_user teaches the section

@@ -9,4 +9,5 @@ urlpatterns = [
     path('student/section/<section_id>/final_result/', StudentResultDetailsAPI.as_view(), name='student-final-result'),
     path('faculty/section/<section_id>/final_result/', FacultyResultDetailsAPI.as_view(), name='faculty-final-result'),
     path('results/', StudentResultsView.as_view(), name='student_results'),
+    path('assessment-marks/', MarksAPI.as_view(), name='assessment-marks'),
 ]
