@@ -95,6 +95,8 @@ class AssessmentBreakdownAdmin(GuardedModelAdmin):
         """
         No one can delete AssessmentBreakdowns.
         """
+        if request.user.is_superuser:
+            return True
         return False
 
     def save_model(self, request, obj, form, change):

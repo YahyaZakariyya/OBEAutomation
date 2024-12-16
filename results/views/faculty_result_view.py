@@ -19,4 +19,4 @@ def faculty_result_view(request):
         'sections': faculty_sections,
     }
 
-    return render(request, 'obesystem/faculty_result.html', context)
+    return render(request, 'results/faculty_result.html', context)

@@ -37,14 +37,11 @@ class CourseLearningOutcome(models.Model):
             .aggregate(total=models.Sum('weightage'))['total'] or 0
         )
 
-        # Add the current weightage to the total
-        total_weightage += self.weightage
-
         # Check if total exceeds 100
-        if total_weightage > 100:
+        if (total_weightage+self.weightage) > 100:
             raise ValidationError(
                 f"The total weightage of all CLOs for the course '{self.course}' exceeds 100%. "
-                f"Current total: {total_weightage}%."
+                f"Remaining: {100 - total_weightage}%."
             )
 
     def save(self, *args, **kwargs):

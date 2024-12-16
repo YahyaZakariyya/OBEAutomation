@@ -2,11 +2,15 @@ from django.contrib import admin
 from outcomes.models import ProgramLearningOutcome
 
 class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
-    list_display = ('custom_number', 'custom_description', 'weightage_with_percentage')
+    list_display = ('custom_program','custom_number','heading', 'description', 'weightage_with_percentage')
     list_filter = ('program',)
 
+    def custom_program(self, obj):
+        return str(obj.program.program_abbreviation)
+    custom_program.short_description = 'Program'
+    
     def custom_number(self, obj):
-        return str(obj)
+        return f"PLO: {obj.PLO}"
     custom_number.short_description = 'PLO #'
 
     def custom_description(self, obj):
@@ -20,11 +24,11 @@ class ProgramLearningOutcomeAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Order PLOs by ascending PLO number
         qs = super().get_queryset(request)
-        return qs.order_by('PLO')  # Ascending order by PLO number
+        return qs.order_by('program','PLO')  # Ascending order by PLO number
 
     def has_module_permission(self, request):
         # Hide the course from the admin index page and sidebar
-        return False
+        return True
     
 admin.site.register(ProgramLearningOutcome, ProgramLearningOutcomeAdmin)
 

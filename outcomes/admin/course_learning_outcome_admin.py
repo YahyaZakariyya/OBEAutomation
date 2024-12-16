@@ -2,11 +2,11 @@ from django.contrib import admin
 from outcomes.models import CourseLearningOutcome
 
 class CourseLearningOutcomeAdmin(admin.ModelAdmin):
-    list_display = ('custom_number', 'custom_description')
+    list_display = ('course','custom_number', 'heading', 'description', 'weightage')
     list_filter = ('course',)
 
     def custom_number(self, obj):
-        return str(obj)
+        return f"CLO {obj.CLO}"
     custom_number.short_description = 'CLO #'
 
     def custom_description(self, obj):
@@ -16,7 +16,7 @@ class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Order CLOs by ascending CLO number
         qs = super().get_queryset(request)
-        return qs.order_by('CLO')  # Ascending order by CLO number
+        return qs.order_by('course','CLO')  # Ascending order by CLO number
 
     def has_module_permission(self, request):
         # Hide the course from the admin index page and sidebar
