@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.urls import reverse
 from courses.models import Course
-from django.http import JsonResponse
-
 
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('custom_course_name', 'credit_hours', 'display_programs', 'view_clos')
@@ -16,25 +15,13 @@ class CourseAdmin(admin.ModelAdmin):
 
     def display_programs(self, obj):
         # Joining all program names associated with the course
-        return ", ".join([program.name for program in obj.programs.all()])
+        return ", ".join([program.program_abbreviation for program in obj.programs.all()])
     display_programs.short_description = "Programs"  # This will show "Programs" in the admin list view
 
     def view_clos(self, obj):
-        url = f"/obesystem/courselearningoutcome/?course__id__exact={obj.id}"
-        return format_html('<a class="btn btn-primary" href="{}">View CLOs</a>', url)
+        url = reverse('admin:outcomes_courselearningoutcome_changelist') + f"?course__id__exact={obj.id}"
+        return format_html('<a class="btn btn-sm btn-dark" href="{}">CLOs</a>', url)
     view_clos.short_description = "View CLOs"
     view_clos.allow_tags = True  # Ensures the HTML is rendered correctly
-
-def get_programs(request):
-    course_id = request.GET.get('course_id')
-    programs = []
-    if course_id:
-        try:
-            course = Course.objects.get(id=course_id)
-            programs = [{'id': program.id, 'name': program.name} for program in course.programs.all()]
-        except Course.DoesNotExist:
-            pass
-    return JsonResponse(programs, safe=False)
-
 
 admin.site.register(Course, CourseAdmin)

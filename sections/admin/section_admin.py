@@ -1,26 +1,20 @@
 from django.contrib import admin
 from django import forms
-from django.http import JsonResponse
-from django.urls import reverse, path
+from django.urls import reverse
 from django.shortcuts import get_object_or_404
 from sections.models import Section
-from courses.models import Course
 from assessments.models import Assessment
 from guardian.shortcuts import get_objects_for_user
 from guardian.admin import GuardedModelAdmin
-
-def get_courses(request):
-    program_id = request.GET.get('program_id')
-    if program_id:
-        courses = Course.objects.filter(programs__id=program_id)
-        data = [{'id': course.id, 'name': course.name} for course in courses]
-        return JsonResponse(data, safe=False)
-    return JsonResponse([], safe=False)  # Return an empty list if no program is selected
+from django.utils.translation import gettext_lazy as _
 
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
         fields = ['program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status']
+
+    class Media:
+        js = ('js/section_form.js',)  # Link to the custom JavaScript file
 
 class SectionAdmin(GuardedModelAdmin):
     form = SectionForm
@@ -57,15 +51,50 @@ class SectionAdmin(GuardedModelAdmin):
             Assessment._meta.app_label, Assessment._meta.model_name)) + f'?section__id__exact={object_id}'
         
         return super(SectionAdmin, self).change_view(request, object_id, form_url, extra_context)
-    
-    class Media:
-        js = ('admin/js/dynamic_program.js',)  # Link to the custom JavaScript file
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('get-courses/', self.admin_site.admin_view(get_courses), name='get_courses'),
-        ]
-        return custom_urls + urls
 
 admin.site.register(Section, SectionAdmin)
+
+# Dynamic Sidebar Name Override
+class DynamicSidebarMixin:
+    def get_app_list(self, request, app_label=None):
+        app_list = super().get_app_list(request, app_label)
+
+        url = ''
+        
+        # Dynamically update the sidebar name for "Sections" based on user role
+        for app in app_list:
+            for model in app['models']:
+                if model['object_name'] == 'Section':  # Match the model class name
+                    if hasattr(request.user, 'role'):
+                        if request.user.role == 'faculty':
+                            url = '/results/faculty-result-view/'
+                            model['name'] = _("Assigned Courses")
+                        elif request.user.role == 'student':
+                            url = '/results/student-result-view/'
+                            model['name'] = _("Enrolled Courses")
+                        else:
+                            model['name'] = _("Sections")
+
+        # Add a custom menu item for "Custom Reports"
+        custom_menu_item = {
+            'name': 'Standard Results',         # Menu item name
+            'app_label': 'general_result',      # Required for Jazzmin
+            'object_name': 'GeneralResult',   # Identifier
+            'admin_url': url,  # Target URL
+            'perms': {'view': True},          # Permission check
+            'icon': 'fas fa-chart-line'       # Optional: FontAwesome icon
+        }
+
+        # Add this menu under a "Custom Tools" app
+        custom_app = {
+            'name': 'Result App',       # App name in the sidebar
+            'app_label': 'Results',  # Required
+            'models': [custom_menu_item]  # List of menu items
+        }
+        # In get_app_list or similar logic:
+        app_list.append(custom_app)
+
+        return app_list
+
+# Apply the Mixin to the Default Admin Site
+admin.site.__class__ = type('DynamicAdminSite', (DynamicSidebarMixin, admin.AdminSite), {})

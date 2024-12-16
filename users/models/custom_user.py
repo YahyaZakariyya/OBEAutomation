@@ -28,4 +28,7 @@ class CustomUser(AbstractUser):
     )
 
     def __str__(self):
-        return f"{self.username} ({self.role})"
+        if self.role == 'student':
+            return f"{self.first_name} ({self.username})"
+        else:
+            return f"{self.first_name} {self.last_name}"
