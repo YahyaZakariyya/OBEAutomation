@@ -5,6 +5,7 @@ from guardian.shortcuts import get_objects_for_user
 from guardian.admin import GuardedModelAdmin
 from .question_admin import QuestionInline
 from django.utils.html import format_html
+from django.urls import reverse
 
 class AssessmentAdmin(GuardedModelAdmin):
     inlines = [QuestionInline]
@@ -21,7 +22,8 @@ class AssessmentAdmin(GuardedModelAdmin):
         if obj:  # Ensure obj is not None
             request = getattr(self, 'current_request', None)
             if request and self.has_change_permission(request, obj):
-                return format_html('<a class="btn btn-sm btn-primary" href="/edit-scores/?id={}" target="_blank">Manage Marks</a>', obj.id)
+                url = reverse('edit_scores') + f'?id={obj.id}'
+                return format_html('<a class="btn btn-sm btn-primary" href="{}" target="_blank">Manage Marks</a>', url)
             else:
                 return format_html('<a href="/view-scores/?id={}" target="_blank">View Marks</a>', obj.id)
         return "-"  # Return a default placeholder if obj is None
@@ -98,5 +100,8 @@ class AssessmentAdmin(GuardedModelAdmin):
         if obj is None:  # For the changelist view
             return True
         return request.user.has_perm('assessments.delete_assessment', obj)
+    
+    class Media:
+        js = ('js/assessment_clo_filter.js',)  # Add the JS file
 
 admin.site.register(Assessment, AssessmentAdmin)
