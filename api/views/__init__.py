@@ -9,4 +9,4 @@ from .faculty_result_details_api import FacultyResultDetailsAPI
 from .student_result_view import StudentResultsView
 from .students_score_api import MarksAPI
 from .outcomes import get_clos_by_course, get_plos_by_program
-from .courses import CoursesByProgram
+from .courses import CoursesByProgram, CourseBySection
