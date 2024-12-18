@@ -1,4 +1,2 @@
-from .course import Course
-__all__ = [
-    'Course',
-]
+from .faculty_course import FacultyCourse  # Import the FacultyCourse model
+from .course import Course  # Import the Course model

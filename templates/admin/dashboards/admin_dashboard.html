@@ -4,8 +4,8 @@
             <div class="card">
                 <div class="card-header">Programs Overview</div>
                 <div class="card-body">
-                    <p>Total Programs: <strong>15</strong></p>
-                    <p>Active Programs: <strong>12</strong></p>
+                    <p>Total Programs: <strong id="total-programs">0</strong></p>
+                    <p>Active Programs: <strong id="active-programs">0</strong></p>
                     <div class="view-more">
                         <a href="#">View All Programs</a>
                     </div>
@@ -16,8 +16,8 @@
             <div class="card">
                 <div class="card-header">Courses Overview</div>
                 <div class="card-body">
-                    <p>Total Courses: <strong>50</strong></p>
-                    <p>Active Courses: <strong>45</strong></p>
+                    <p>Total Courses: <strong id="total-courses">0</strong></p>
+                    <p>Active Courses: <strong id="active-courses">0</strong></p>
                     <div class="view-more">
                         <a href="#">View All Courses</a>
                     </div>
@@ -28,8 +28,8 @@
             <div class="card">
                 <div class="card-header">Sections Overview</div>
                 <div class="card-body">
-                    <p>Total Sections: <strong>120</strong></p>
-                    <p>Active Sections: <strong>110</strong></p>
+                    <p>Total Sections: <strong id="total-sections">0</strong></p>
+                    <p>Active Sections: <strong id="active-sections">0</strong></p>
                     <div class="view-more">
                         <a href="#">View All Sections</a>
                     </div>
@@ -74,8 +74,8 @@
             <div class="card">
                 <div class="card-header">User Management</div>
                 <div class="card-body">
-                    <p>Total Users: <strong>200</strong></p>
-                    <p>Admin Users: <strong>5</strong></p>
+                    <p>Total Users: <strong id="total-users">0</strong></p>
+                    <p>Admin Users: <strong id="total-admins">0</strong></p>
                     <div class="view-more">
                         <a href="#">View All Users</a>
                     </div>
@@ -99,26 +99,56 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('cloChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            datasets: [{
-                label: 'CLO Attainment',
-                data: [70, 85, 75, 90, 95],
-                backgroundColor: 'rgba(47, 128, 237, 0.2)',
-                borderColor: 'rgba(47, 128, 237, 1)',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+    async function fetchCloData() {
+        const response = await fetch('/api/faculty_clo_attainment/<section_id>/'); // Replace <section_id> with the actual section ID
+        const data = await response.json();
+        return data;
+    }
+
+    function renderChart(data) {
+        const ctx = document.getElementById('cloChart').getContext('2d');
+        const labels = data.map(item => item.heading);
+        const values = data.map(item => item.weightage);
+
+        const chart = new Chart(ctx, {
+            type: 'bar', // You can change this to 'line' or 'pie' as needed
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'CLO Weightage',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
+        });
+    }
+
+    fetchCloData().then(renderChart);
+    async function fetchDashboardData() {
+        try {
+            const response = await fetch('/api/dashboard/overview/');
+            const data = await response.json();
+            document.getElementById('total-programs').innerText = data.total_programs;
+            document.getElementById('active-programs').innerText = data.active_programs;
+            document.getElementById('total-courses').innerText = data.total_courses;
+            document.getElementById('active-courses').innerText = data.active_courses;
+            document.getElementById('total-sections').innerText = data.total_sections;
+            document.getElementById('active-sections').innerText = data.active_sections;
+            document.getElementById('total-users').innerText = data.total_users;
+            document.getElementById('total-admins').innerText = data.total_admins;
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
         }
-    });
+    }
+
+    window.onload = fetchDashboardData;
 </script>

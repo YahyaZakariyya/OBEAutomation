@@ -52,6 +52,8 @@ class Section(models.Model):
         default='in_progress'
     )
 
+    is_active = models.BooleanField(default=True)  # Add is_active field
+
     def __str__(self):
         return f"{self.course.name} - {self.semester}"
 
@@ -66,7 +68,19 @@ class Section(models.Model):
             ('can_add_assessment', 'Can add assessment to this section'),
         ]
 
+    @classmethod
+    def count_admins(cls):
+        return CustomUser.objects.filter(role='admin').count()
+
     def clean(self):
+        # Ensure that the selected program is associated with the selected course
+        if self.course and self.program:
+            if self.program not in self.course.programs.all():
+                raise ValidationError("Selected program is not associated with the chosen course.")
+                
+    @classmethod
+    def get_active_sections(cls):
+        return cls.objects.filter(status='in_progress')
         # Ensure that the selected program is associated with the selected course
         if self.course and self.program:
             if self.program not in self.course.programs.all():

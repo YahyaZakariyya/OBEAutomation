@@ -1,10 +1,9 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
-from courses.models import Course
 
 class CourseLearningOutcome(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_outcomes')
+    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE, related_name='course_outcomes')  # Use string reference
     CLO = models.IntegerField(
         choices=[(i, str(i)) for i in range(1, 16)],  # Dropdown from 1 to 15
         validators=[MinValueValidator(1)]

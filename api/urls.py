@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import DashboardOverview, SectionsAPI, CLOAttainmentAPI, FacultySectionsList, FacultyCLOAttainment, StudentResultDetailsAPI, FacultyResultDetailsAPI, StudentResultsView, MarksAPI, CoursesByProgram, CourseBySection, get_plos_by_program, get_clos_by_course
 
 urlpatterns = [
     path('sections/', SectionsAPI.as_view(), name='student_sections'),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('get-course-id/', CourseBySection.as_view(), name='get_course_by_section'),
     path('plos/<int:program_id>/', get_plos_by_program, name='get_plos'),
     path('clos/<int:course_id>/', get_clos_by_course, name='get_clos'),
+    path('dashboard/overview/', DashboardOverview.as_view(), name='dashboard-overview'),  # New endpoint for dashboard overview
 ]

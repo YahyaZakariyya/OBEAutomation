@@ -11,6 +11,7 @@ class Course(models.Model):
             MaxValueValidator(4)
         ])
     programs = models.ManyToManyField(Program, related_name='courses')
+    is_active = models.BooleanField(default=True)  # Add is_active field
 
     def __str__(self):
         return f"{self.name} ({self.course_id})"

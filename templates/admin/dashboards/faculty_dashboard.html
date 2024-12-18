@@ -1,41 +1,6 @@
 <div class="content">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Data Science</div>
-                <div class="card-body">
-                    <p>Assessments: <strong>5</strong></p>
-                    <p>Students Enrolled: <strong>60</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Web Development</div>
-                <div class="card-body">
-                    <p>Assessments: <strong>7</strong></p>
-                    <p>Students Enrolled: <strong>45</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Machine Learning</div>
-                <div class="card-body">
-                    <p>Assessments: <strong>4</strong></p>
-                    <p>Students Enrolled: <strong>35</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="row mt-4" id="course-cards">
+        <!-- Course cards will be dynamically inserted here -->
     </div>
 
     <div class="view-more mt-3">
@@ -74,52 +39,37 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('cloChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Data Science', 'Web Development', 'Machine Learning'],
-            datasets: [{
-                label: 'CLO Attainment',
-                data: [85, 75, 90],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 99, 132, 0.5)',
-                    'rgba(75, 192, 192, 0.5)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `CLO Attainment: ${context.raw}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 10
-                    }
-                }
-            }
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/dashboard/')  // Adjust the URL to match your API endpoint
+            .then(response => response.json())
+            .then(data => {
+                // Update the dashboard with the fetched data
+                document.getElementById('total_sections').innerText = data.total_sections;
+                document.getElementById('active_sections').innerText = data.active_sections;
+
+                // Dynamically create course cards
+                const courseCardsContainer = document.getElementById('course-cards');
+                data.course_details.forEach(course => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-4';
+                    card.innerHTML = `
+                        <div class="card">
+                            <div class="card-header">Course: ${course.name}</div>
+                            <div class="card-body">
+                                <p>Semester: <strong>${course.semester}</strong></p>
+                                <p>Batch: <strong>${course.batch}</strong></p>
+                                <p>Assessments: <strong>${course.total_assessments}</strong></p>
+                                <p>Students Enrolled: <strong>${course.enrolled_students}</strong></p>
+                                <div class="view-more">
+                                    <a href="#">View All Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    courseCardsContainer.appendChild(card);
+                });
+            })
+            .catch(error => console.error('Error fetching dashboard data:', error));
     });
 </script>
