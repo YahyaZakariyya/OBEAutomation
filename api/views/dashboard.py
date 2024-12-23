@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from users.models import CustomUser  # Import the custom user model
 from programs.models import Program
@@ -24,4 +24,10 @@ class DashboardOverview(APIView):
             'total_users': users.count(),
             'total_admins': admins.count(),
         }
+
         return Response(data)
+ 
+    # def get(self, request):
+    #     sections = Section.objects.all().values('program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status')
+    #     dataa = list(sections)
+    #     return JsonResponse(dataa)

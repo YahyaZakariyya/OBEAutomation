@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import DashboardOverview, SectionsAPI, CLOAttainmentAPI, FacultySectionsList, FacultyCLOAttainment, StudentResultDetailsAPI, FacultyResultDetailsAPI, StudentResultsView, MarksAPI, CoursesByProgram, CourseBySection, get_plos_by_program, get_clos_by_course
-
 urlpatterns = [
     path('sections/', SectionsAPI.as_view(), name='student_sections'),
     path('section/<int:section_id>/clo_attainment/', CLOAttainmentAPI.as_view(), name='clo_attainment'),

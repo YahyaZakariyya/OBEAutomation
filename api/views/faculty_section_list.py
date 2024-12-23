@@ -9,5 +9,5 @@ class FacultySectionsList(APIView):
     def get(self, request):
         faculty = request.user
         sections = Section.objects.filter(faculty=faculty)
-        data = [{'id': s.id, 'course_name': f"{s.course.code} - {s.course.title}"} for s in sections]
+        data = [{'id': s.id,'total-sections': sections.count(), 'course_name': f"{s.course.code} - {s.course.title}"} for s in sections]
         return Response(data)

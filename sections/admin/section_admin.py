@@ -12,14 +12,11 @@ class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
         fields = ['program', 'course', 'faculty', 'semester', 'section', 'batch', 'year', 'students', 'status']
-
     class Media:
         js = ('js/section_form.js',)  # Link to the custom JavaScript file
 
 class SectionAdmin(GuardedModelAdmin):
     form = SectionForm
-
-    list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty')
     list_filter = ('semester', 'batch', 'year')
     search_fields = ('course__name', 'faculty__username', 'faculty__first_name', 'faculty__last_name')
 
@@ -31,6 +28,13 @@ class SectionAdmin(GuardedModelAdmin):
         return queryset.filter(pk__in=get_objects_for_user(
             request.user, 'sections.view_section', queryset
         ))
+
+    def get_student_count(self, obj):
+        return obj.students.count()  # Count the number of students in the section
+
+    get_student_count.short_description = 'Students'  # Column header in the admin
+
+    list_display = ('course', 'semester', 'section', 'batch', 'year', 'faculty', 'status', 'get_student_count')  # Update list_display to include the student count
 
     def has_module_permission(self, request):
         return True

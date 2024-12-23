@@ -1,22 +1,35 @@
 <div class="content">
-    <div class="row mt-4" id="course-cards">
-        <!-- Course cards will be dynamically inserted here -->
-    </div>
-
-    <div class="view-more mt-3">
-        <a href="#">View All Courses</a>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Course Overview</div>
+                <div class="card-body">
+                    <p>Course Name: <strong id="course">0</strong></p>
+                    <p>Section: <strong id="section">0</strong></p>
+                    <p>Semester: <strong id="semester">0</strong></p>
+                    <p>Batch: <strong id="batch">0</strong></p>
+                    <p>Year: <strong id="year">0</strong></p>
+                    <p>Faculty: <strong id="faculty">0</strong></p>
+                    <p>Total Students: <strong id="get_student_count">0</strong></p>
+                    <p>Status: <strong id="status">0</strong></p>
+                    <div class="view-more">
+                        <a href="#">View All Courses</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row mt-4">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">CLO Performance Summary</div>
+                <div class="card-header">CLO Performance</div>
                 <div class="card-body">
                     <div class="chart-container">
                         <canvas id="cloChart"></canvas>
                     </div>
                     <div class="view-more">
-                        <a href="{% url 'faculty_result_view' %}">Detailed CLO Analysis</a>
+                        <a href="#">Detailed CLO Reports</a>
                     </div>
                 </div>
             </div>
@@ -26,9 +39,9 @@
                 <div class="card-header">Recent Activities</div>
                 <div class="card-body">
                     <ul>
-                        <li>Graded Assignment 3 (Data Science)</li>
-                        <li>Added Quiz 2 (Web Development)</li>
-                        <li>Updated CLO for Machine Learning</li>
+                        <li>Added new program: AI Basics</li>
+                        <li>Updated CLO for Data Science</li>
+                        <li>Created new section: CS202-B</li>
                     </ul>
                     <div class="view-more">
                         <a href="#">View All Activities</a>
@@ -37,39 +50,69 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">User Management</div>
+                <div class="card-body">
+                    <p>Total Faculty: <strong>60</strong></p>
+                    <p>Total Students: <strong>5800</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/dashboard/')  // Adjust the URL to match your API endpoint
-            .then(response => response.json())
-            .then(data => {
-                // Update the dashboard with the fetched data
-                document.getElementById('total_sections').innerText = data.total_sections;
-                document.getElementById('active_sections').innerText = data.active_sections;
+    function renderChart(data) {
+        const ctx = document.getElementById('cloChart').getContext('2d');
+        const labels = data.map(item => item.heading);
+        const values = data.map(item => item.weightage);
 
-                // Dynamically create course cards
-                const courseCardsContainer = document.getElementById('course-cards');
-                data.course_details.forEach(course => {
-                    const card = document.createElement('div');
-                    card.className = 'col-md-4';
-                    card.innerHTML = `
-                        <div class="card">
-                            <div class="card-header">Course: ${course.name}</div>
-                            <div class="card-body">
-                                <p>Semester: <strong>${course.semester}</strong></p>
-                                <p>Batch: <strong>${course.batch}</strong></p>
-                                <p>Assessments: <strong>${course.total_assessments}</strong></p>
-                                <p>Students Enrolled: <strong>${course.enrolled_students}</strong></p>
-                                <div class="view-more">
-                                    <a href="#">View All Details</a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    courseCardsContainer.appendChild(card);
-                });
-            })
-            .catch(error => console.error('Error fetching dashboard data:', error));
-    });
+        const chart = new Chart(ctx, {
+            type: 'pie', // You can change this to 'line' or 'pie' as needed
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'CLO Weightage',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    fetchCloData().then(renderChart);
+
+    async function fetchData() {
+        try {
+            const response = await fetch('/api/dashboard/overview/');  // Call the new method
+            const dataa = await response.json();
+                //const section = data[0];  // Get the first section for display
+                document.getElementById('course').innerText = sections.course;
+                document.getElementById('section').innerText = Section.section;
+                document.getElementById('semester').innerText = Sections.semester;
+                document.getElementById('batch').innerText = sections_data.batch;  // Corrected reference
+                document.getElementById('year').innerText = dataa.year;
+                document.getElementById('faculty').innerText = section.faculty;
+                document.getElementById('get_student_count').innerText = section.students.length;  // Assuming students is a list
+                document.getElementById('status').innerText = section.status;
+            
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    }
+
+    window.onload = fetchData;
 </script>

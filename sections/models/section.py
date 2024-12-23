@@ -71,6 +71,8 @@ class Section(models.Model):
     @classmethod
     def count_admins(cls):
         return CustomUser.objects.filter(role='admin').count()
+    def count_students(cls):
+        return CustomUser.objects.filter(role='students').count()
 
     def clean(self):
         # Ensure that the selected program is associated with the selected course
