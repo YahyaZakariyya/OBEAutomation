@@ -29,4 +29,4 @@ class ProgramLearningOutcome(models.Model):
             raise ValidationError(f"The total weightage for PLOs in the program {self.program.program_abbreviation} cannot exceed 100%. Current total: {total_weightage}%. Remaining: {100 - total_weightage}%")
 
     def __str__(self):
-        return f"PLO {self.PLO}: {self.heading}:"
+        return f"PLO {self.PLO}: {self.heading}"
