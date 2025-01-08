@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-
+from django.core.exceptions import ValidationError
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
@@ -26,6 +26,18 @@ class CustomUser(AbstractUser):
         related_name="customuser_set",
         related_query_name="user",
     )
+
+    def clean(self):
+        super().clean()
+        # Validate that the role is within the allowed choices
+        valid_roles = [choice[0] for choice in self.ROLE_CHOICES]
+        if self.role not in valid_roles:
+            raise ValidationError(f"Invalid role: {self.role}. Must be one of {valid_roles}")
+        
+    def save(self, *args, **kwargs):
+        # Call clean before saving to enforce validation
+        self.full_clean()  # This will trigger the clean() method
+        super().save(*args, **kwargs)
 
     def __str__(self):
         if self.role == 'student':
