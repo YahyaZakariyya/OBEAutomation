@@ -21,6 +21,7 @@
     {% endif %}
 
     {% block dashboard %}
+    <div class="dashboard-wrapper">
         <div class="dashboard-container">
             <div class="header">
                 <h1>Welcome, {{user.first_name}}</h1>
@@ -37,15 +38,13 @@
                 </div>
             {% endif %}
         </div>
+    </div>
     {% endblock %}
     
 {% endblock %}
 
 <!-- Extend in templates/admin/base_site.html -->
 {% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --primary-color: #2A3F54;
@@ -55,6 +54,13 @@
             --text-color: #34495E;
             --muted-text-color: #7F8C8D;
             --hover-color: #F4F6F8;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            flex-direction: column; /* Ensures the content stacks vertically */
+            margin: 0 auto;
+            width: 100%; /* Full width of the page */
         }
 
         .header {
@@ -124,8 +130,6 @@
 {% endblock %}
 
 {% block extrahead %}
-    {{ block.super }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
-

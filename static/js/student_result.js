@@ -5,23 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // DOM Elements
     const sectionFilter = document.getElementById("section-filter");
     const overviewBlock = document.getElementById("overview");
-    const assessmentFilterBlock = document.getElementById("assessment-filter-block");
-    const assessmentFilter = document.getElementById("assessment-filter");
-    const resultsBlock = document.getElementById("results-block");
     const majorTableBlock = document.getElementById("major-table-block");
 
     const totalWeight = document.getElementById("total-weight");
     const courseCompletion = document.getElementById("course-completion");
     const overallScore = document.getElementById("overall-score");
 
-    const assessmentTable = document.getElementById("assessment-table");
     const majorTable = document.getElementById("major-table");
     const downloadCSVButton = document.getElementById("download-csv");
 
     const overviewChartCanvas = document.getElementById("overviewChart");
-    const assessmentChartCanvas = document.getElementById("assessmentChart");
 
-    let overviewChart, assessmentChart;
+    let overviewChart;
 
     // Section Selection Logic
     sectionFilter.addEventListener("change", function () {
@@ -32,9 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fetch(`${apiUrl}?section_id=${sectionId}`)
                 .then((response) => response.json())
                 .then((data) => {
-                    assessmentData = data;
                     populateOverview(data);
-                    populateAssessmentFilter(data.assessment_types);
                     populateMajorTable(data);
                     majorTableBlock.style.display = "block";
                 })
@@ -55,85 +48,33 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderOverviewChart(types) {
         destroyChart(overviewChart);
         overviewChart = new Chart(overviewChartCanvas.getContext("2d"), {
-            type: "pie",
+            type: "doughnut",
             data: {
                 labels: types.map((t) => t.type),
                 datasets: [
                     {
                         data: types.map((t) => t.allocated_weight),
-                        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 205, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(201, 203, 207, 0.2)'],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 159, 64)',
+                            'rgb(255, 205, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(54, 162, 235)',
+                            'rgb(153, 102, 255)',
+                            'rgb(201, 203, 207)'
+                            ],
+                        borderWidth: 1,
                     },
                 ],
             },
-        });
-    }
-
-    // Populate Assessment Filter
-    function populateAssessmentFilter(types) {
-        assessmentFilterBlock.style.display = "block";
-        assessmentFilter.innerHTML = `<option value="">-- Select Assessment Type --</option>`;
-        types.forEach((type, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            option.textContent = type.type;
-            assessmentFilter.appendChild(option);
-        });
-    }
-
-    // Handle Assessment Filter Change
-    assessmentFilter.addEventListener("change", function () {
-        const selectedIndex = this.value;
-        if (selectedIndex !== "") {
-            const selectedType = assessmentData.assessment_types[selectedIndex];
-            populateAssessmentDetails(selectedType);
-            renderAssessmentChart(selectedType.assessments);
-            resultsBlock.style.display = "flex";
-        } else {
-            resetResults();
-        }
-    });
-
-    // Populate Assessment Details Table
-    function populateAssessmentDetails(type) {
-        assessmentTable.innerHTML = "";
-        type.assessments.forEach((a) => {
-            const row = `
-                <tr>
-                    <td rowspan="1">${type.type}</td>
-                    <td>${a.title}</td>
-                    <td>${a.student_obtained_marks}</td>
-                    <td>${a.total_marks}</td>
-                    <td>${a.adjusted_marks.toFixed(2)}</td>
-                    <td>${a.assessment_weight}</td>
-                    <td>${type.completed_weightage || 0}</td>
-                    <td>${a.adjusted_obtained_marks?.toFixed(2) || 0}</td>
-                    <td>${type.allocated_weight}</td>
-                </tr>`;
-            assessmentTable.insertAdjacentHTML("beforeend", row);
-        });
-    }
-
-    // Render Assessment Chart
-    function renderAssessmentChart(assessments) {
-        destroyChart(assessmentChart);
-        assessmentChart = new Chart(assessmentChartCanvas.getContext("2d"), {
-            type: "bar",
-            data: {
-                labels: assessments.map((a) => a.title),
-                datasets: [
-                    {
-                        label: "Obtained Marks",
-                        data: assessments.map((a) => a.student_obtained_marks),
-                        backgroundColor: "#36A2EB",
-                    },
-                    {
-                        label: "Adjusted Marks",
-                        data: assessments.map((a) => a.adjusted_marks),
-                        backgroundColor: "#FF6384",
-                    },
-                ],
-            },
-            options: { responsive: true, maintainAspectRatio: false },
         });
     }
 
@@ -194,8 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
             </tr>`;
         majorTable.insertAdjacentHTML("beforeend", totalRow);
     }
-    
-    
 
     // Download Table as CSV
     downloadCSVButton.addEventListener("click", function () {
@@ -224,15 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function resetUI() {
         overviewBlock.style.display = "none";
-        assessmentFilterBlock.style.display = "none";
-        resultsBlock.style.display = "none";
         majorTableBlock.style.display = "none";
         destroyChart(overviewChart);
-        destroyChart(assessmentChart);
-    }
-
-    function resetResults() {
-        assessmentTable.innerHTML = "";
-        destroyChart(assessmentChart);
     }
 });
