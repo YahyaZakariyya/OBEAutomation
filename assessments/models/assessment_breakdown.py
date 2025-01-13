@@ -36,7 +36,7 @@ class AssessmentBreakdown(models.Model):
             'assignment': self.assignment_weightage,
             'quiz': self.quiz_weightage,
             'lab': self.lab_weightage,
-            'mid': self.mid_weightage,
+            'midterm': self.mid_weightage,
             'final': self.final_weightage,
             'project': self.project_weightage,
         }
