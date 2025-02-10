@@ -1,47 +1,45 @@
-{% extends 'admin/base_site.html' %}
-{% load static %}
-
-{% block content %}
-    <div class="container mt-4">
-        <!-- Title -->
-        <div class="row mb-4">
-            <div class="col text-center">
-            <h2 class="fw-bold">Detailed Result</h2>
-            </div>
+{% extends 'admin/base_site.html' %} {% load static %} {% block content %}
+<div id="app" class="container mt-4">
+    <!-- Title -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h2 class="fw-bold">Detailed Updated Result</h2>
         </div>
-        <div class="form-group">
-            <label for="section">Section</label>
-            <select id="section" class="form-control">
-                <option value="">-- Select Section --</option>
-            </select>
-        </div>
-        <div class="form-check mt-2">
-            <input type="checkbox" id="show_students" class="form-check-input">
-            <label for="show_students" class="form-check-label">Show Students</label>
-        </div>
-
-        <h3 class="mt-4">Assessment Types</h3>
-        <table class="table table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Type</th>
-                    <th>Assessment Count</th>
-                    <th>Allocated Weight (%)</th>
-                    <th>Completion</th>
-                    <th>Average</th>
-                    <th>Highest</th>
-                    <th>Lowest</th>
-                </tr>
-            </thead>
-            <tbody id="assessment-table">
-                <!-- Populated by JavaScript -->
-            </tbody>
-        </table>
-
-        <h3 class="mt-4">Students</h3>
-        <table id="students-table" class="table table-bordered">
-            <!-- Populated by JavaScript -->
-        </table>
     </div>
-    <script src="{% static 'js/faculty_result.js' %}" defer></script>
+
+    <!-- Select Section Component -->
+    <select-section
+        :sections="sections"
+        v-model="selectedSection"
+    ></select-section>
+
+    <div class="form-check mt-2">
+        <input
+            type="checkbox"
+            id="show_students"
+            class="form-check-input"
+            v-model="showStudents"
+        />
+        <label for="show_students" class="form-check-label"
+            >Show Students</label
+        >
+    </div>
+
+    <h3 class="mt-4">Assessment Types</h3>
+    <assessment-table :assessments="assessments"></assessment-table>
+
+    <h3 class="mt-4">Students</h3>
+    <student-table
+        v-if="showStudents"
+        :students="students"
+        :assessments="assessments"
+    ></student-table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script
+    type="module"
+    src="{% static 'js/faculty_result_vue.js' %}"
+    defer
+></script>
 {% endblock %}
