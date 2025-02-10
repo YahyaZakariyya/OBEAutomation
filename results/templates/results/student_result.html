@@ -1,64 +1,44 @@
-{% extends 'admin/base_site.html' %}
-{% load static %}
-
-{% block content %}
-<div class="container mt-4">
-    <!-- Section Selection -->
-    <div class="mb-4">
-        <h2 class="text-center font-weight-bold">Student Results</h2>
-        <div class="card shadow-sm p-4">
-            <h4>Select Course</h4>
-            <select id="section-filter" class="form-control form-control-lg">
-                <option value="">-- Select Course --</option>
-                {% for section in sections %}
-                    <option value="{{ section.id }}">{{ section }}</option>
-                {% endfor %}
-            </select>
+{% extends 'admin/base_site.html' %} {% load static %} {% block content %}
+<div id="app" class="container mt-4">
+    <!-- Title -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h2 class="fw-bold">Tradition Result</h2>
         </div>
     </div>
+
+    <!-- Select Section Component -->
+    <select-section
+        :sections="sections"
+        v-model="selectedSection"
+    ></select-section>
 
     <!-- Student Results Overview -->
-    <div id="overview" class="mb-4" style="display: none;">
-        <div class="card shadow-sm p-4">
-            <h5 class="mb-3">Student Results Overview</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    <p>Total Weight: <strong><span id="total-weight"></span></strong></p>
-                    <p>Course Completion: <strong><span id="course-completion"></span>%</strong></p>
-                    <p>Student Overall Score: <strong><span id="overall-score"></span>%</strong></p>
-                </div>
-                <div class="col-md-6">
-                    <canvas id="overviewChart" style="height: 300px;"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+    <overview-section
+        v-if="overviewData"
+        :overview="overviewData"
+    ></overview-section>
 
-    <!-- Major Table -->
-    <div id="major-table-block" class="card shadow-sm p-4 mb-4" style="display: none;">
-        <h5 class="mb-3">Final Summary</h5>
-        <div class="table-responsive">
-            <table class="table table-bordered text-center">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Types</th>
-                        <th>Titles</th>
-                        <th>Obt.M</th>
-                        <th>Total.M</th>
-                        <th>Adjusted.M</th>
-                        <th>Weightage</th>
-                        <th>Completed Weightage</th>
-                        <th>Adjusted Obt.M</th>
-                        <th>Total Weightage</th>
-                    </tr>
-                </thead>
-                <tbody id="major-table"></tbody>
-            </table>
-        </div>
-        <button id="download-csv" class="btn btn-success mt-3">Download as CSV</button>
-    </div>
+    <!-- Final Summary Table -->
+    <summary-table
+        v-if="majorData && majorData.length"
+        :assessments="majorData"
+    ></summary-table>
+
+    <!-- Download CSV Button -->
+    <button
+        v-if="majorData.length"
+        @click="downloadCSV"
+        class="btn btn-success mt-3"
+    >
+        Download as CSV
+    </button>
 </div>
 
-<script src="{% static 'js/student_result.js' %}" defer></script>
-
+<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script
+    type="module"
+    src="{% static 'js/student_result_vue.js' %}"
+    defer
+></script>
 {% endblock %}
