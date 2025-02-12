@@ -1,12 +1,15 @@
-from .student_clo_atainment import CLOAttainmentAPI
+# from .student_clo_atainment import CLOAttainmentAPI
 from .user_section_api import SectionsAPI
 from .faculty_clo_attainment import FacultyCLOAttainment
 from .faculty_section_list import FacultySectionsList
-from .student_final_result import StudentFinalResultAPI
-from .faculty_final_result import FacultyFinalResultsAPI
+# from .student_final_result import StudentFinalResultAPI
+# from .faculty_final_result import FacultyFinalResultsAPI
 from .student_result_details_api import StudentResultDetailsAPI
 from .faculty_result_details_api import FacultyResultDetailsAPI
 from .student_result_view import StudentResultsView
 from .students_score_api import MarksAPI
-from .outcomes import get_clos_by_course, get_plos_by_program
+# from .outcomes import get_clos_by_course, get_plos_by_program
 from .courses import CoursesByProgram, CourseBySection
+from .faculty_clo_attainment_api import FacultyCLOAttainmentAPI
+from .student_clo_attainment_api import StudentCLOAttainmentAPI
+from .optimized_student_clo_attainment_api import OptimizedStudentCLOAttainment
