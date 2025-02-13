@@ -4,8 +4,8 @@ export const ScoreTable = {
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Student</th>
-                    <th v-for="question in questions">Question {{ question.id }}</th>
+                    <th rowspan="2">Student</th>
+                    <th v-for="(question, index) in questions">Question {{ index + 1 }} ({{ question.marks }})</th>
                 </tr>
             </thead>
             <tbody>
@@ -15,7 +15,7 @@ export const ScoreTable = {
                         <input type="number" class="form-control"
                                v-model="studentScores[student.id][question.id]"
                                :min="0" :max="question.marks"
-                               @input="updateScore(student.id, question.id, studentScores[student.id][question.id])">
+                               @input="validateAndUpdate(student.id, question.id, studentScores[student.id][question.id])">
                     </td>
                 </tr>
             </tbody>
@@ -34,8 +34,14 @@ export const ScoreTable = {
         }
     },
     methods: {
-        updateScore(studentId, questionId, marksObtained) {
-            this.$emit("update-score", { student_id: studentId, question_id: questionId, marks_obtained: marksObtained });
+        validateAndUpdate(studentId, questionId, marksObtained) {
+            const maxMarks = this.questions.find(q => q.id === questionId).marks;
+            if (marksObtained > maxMarks) {
+                alert(`Marks cannot exceed ${maxMarks}!`);
+                this.studentScores[studentId][questionId] = maxMarks;
+            } else {
+                this.$emit("update-score", { student_id: studentId, question_id: questionId, marks_obtained: marksObtained });
+            }
         }
     }
 };
