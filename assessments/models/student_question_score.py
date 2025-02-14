@@ -6,11 +6,7 @@ from .question import Question
 class StudentQuestionScore(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    marks_obtained = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=0.00,  # Default value set to 0
-    )
+    marks_obtained = models.FloatField()
 
     class Meta:
         unique_together = ('student', 'question')

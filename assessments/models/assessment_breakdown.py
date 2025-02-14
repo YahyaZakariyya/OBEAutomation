@@ -6,12 +6,12 @@ class AssessmentBreakdown(models.Model):
     section = models.OneToOneField(Section, on_delete=models.CASCADE)  # Ensures only one breakdown per section
 
     # Individual fields for each assessment type
-    assignment_weightage = models.PositiveIntegerField(default=0)
-    quiz_weightage = models.PositiveIntegerField(default=0)
-    lab_weightage = models.PositiveIntegerField(default=0)
-    mid_weightage = models.PositiveIntegerField(default=0)
-    final_weightage = models.PositiveIntegerField(default=0)
-    project_weightage = models.PositiveIntegerField(default=0)
+    assignment_weightage = models.FloatField(default=0)
+    quiz_weightage = models.FloatField(default=0)
+    lab_weightage = models.FloatField(default=0)
+    mid_weightage = models.FloatField(default=0)
+    final_weightage = models.FloatField(default=0)
+    project_weightage = models.FloatField(default=0)
 
     def clean(self):
         # Validate that the total weightage equals 100

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum
+from django.shortcuts import get_object_or_404
 from assessments.models import Assessment, Question, StudentQuestionScore
 from sections.models import Section
 from outcomes.models import CourseLearningOutcome
@@ -13,104 +13,106 @@ class FacultyCLOAttainmentAPI(APIView):
 
     def get(self, request, section_id):
         """
-        API to fetch summarized OBE result details for a given section.
+        Fully corrected API to fetch student-wise CLO attainment,
+        ensuring only contributing assessments are included.
         """
-
         # Get Section
-        section = Section.objects.filter(id=section_id).first()
-        if not section:
-            return Response({"status": "error", "message": "Section not found"}, status=404)
+        section = get_object_or_404(Section, id=section_id)
+        students = section.students.all()
 
-        course = section.course
-        faculty = section.faculty
+        # Get CLOs and map by ID (Ensure ordered CLOs)
+        clos = CourseLearningOutcome.objects.filter(course=section.course).order_by("CLO")
+        clo_mapping = {clo.id: f"CLO{clo.CLO}" for clo in clos}
 
-        # Get the Assessment Breakdown
+        # Get Assessment Breakdown (for weightages)
         breakdown = AssessmentBreakdown.objects.filter(section=section).first()
         if not breakdown:
             return Response({"status": "error", "message": "Assessment Breakdown not found"}, status=404)
 
-        assessment_weights = breakdown.get_assessment_types()
+        assessment_weights = breakdown.get_assessment_types()  # Fetch dynamic weightages
 
-        # Get all CLOs for the Course
-        clos = CourseLearningOutcome.objects.filter(course=course)
+        # Exclude assessments with 0 weightage
+        valid_assessment_types = {atype: weight for atype, weight in assessment_weights.items() if weight > 0}
 
-        # CLO Data Structure
-        clo_lookup = {
-            clo.id: {
-                "cloCode": f"CLO{clo.CLO}",
+        # Get Assessments and Questions
+        assessments = Assessment.objects.filter(section=section, type__in=valid_assessment_types.keys()).prefetch_related("questions")
+        questions = Question.objects.filter(assessment__section=section).prefetch_related("clo")
+        student_scores = StudentQuestionScore.objects.filter(question__assessment__section=section)
+
+        # **Data Structure Initialization**
+        clo_results = {
+            clo_mapping[clo.id]: {
                 "title": clo.heading,
                 "weightage": clo.weightage,
                 "totalMarks": 0,
-                "assessmentTypeContribution": {},  # Contribution of each assessment type
+                "assessmentTypeContribution": {}
             }
             for clo in clos
         }
 
-        # Get All Assessments for the Section
-        assessments = Assessment.objects.filter(section=section)
-        assessment_data = []
-
-        for assessment in assessments:
-            assessment_category_weightage = assessment_weights.get(assessment.type, 0)
-            effectiveAssessmentWeightage = (assessment.weightage / 100) * assessment_category_weightage
-
-            assessment_info = {
-                "assessmentId": assessment.id,
-                "assessmentTitle": assessment.title,
-                "assessmentType": assessment.type,
-                "effectiveAssessmentWeightage": round(effectiveAssessmentWeightage, 2)
+        student_results = {
+            student.get_full_name(): {
+                clo_key: {}  # Only add assessments if they contribute
+                for clo_key in clo_mapping.values()
             }
+            for student in students
+        }
 
-            # Get all Questions under this Assessment
-            questions = Question.objects.filter(assessment=assessment)
-            total_question_marks = sum(q.marks for q in questions)
+        # **Process Data**
+        for assessment in assessments:
+            total_assessment_marks = sum(q.marks for q in assessment.questions.all())
+            if total_assessment_marks == 0:
+                continue  # Skip empty assessments
 
-            for question in questions:
-                normalized_question_weight = (question.marks / total_question_marks) * effectiveAssessmentWeightage
+            assessment_type = assessment.type
+            effective_weight = valid_assessment_types[assessment.type]
+            adjusted_weight = effective_weight*assessment.weightage/100
 
-                # Get CLOs mapped to this question
+            for question in assessment.questions.all():
+                if not question.clo.exists():
+                    continue  # Skip questions without CLOs
+
+                question_weight = (question.marks / total_assessment_marks) * adjusted_weight
                 mapped_clos = question.clo.all()
                 num_clos = mapped_clos.count()
 
                 for clo in mapped_clos:
-                    distribution_factor = 1 / num_clos
-                    if assessment.type not in clo_lookup[clo.id]["assessmentTypeContribution"]:
-                        clo_lookup[clo.id]["assessmentTypeContribution"][assessment.type] = 0
+                    distributed_weight = question_weight / num_clos
+                    clo_key = clo_mapping[clo.id]
+                    clo_results[clo_key]["totalMarks"] += distributed_weight
 
-                    clo_lookup[clo.id]["assessmentTypeContribution"][assessment.type] += round(
-                        normalized_question_weight * distribution_factor, 2
-                    )
+                    # Add assessment type only if it contributes
+                    if assessment_type not in clo_results[clo_key]["assessmentTypeContribution"]:
+                        clo_results[clo_key]["assessmentTypeContribution"][assessment_type] = 0
+                    clo_results[clo_key]["assessmentTypeContribution"][assessment_type] += distributed_weight
+                    print('Assessment Type:',assessment_type, clo_results[clo_key]["assessmentTypeContribution"][assessment_type])
 
-            assessment_data.append(assessment_info)
+                    # Add student results, but only for relevant CLOs
+                    for student in students:
+                        student_name = student.get_full_name()
+                        score = student_scores.filter(student=student, question=question).first()
+                        if score:
+                            student_results[student_name][clo_key].setdefault(assessment_type, 0)
+                            student_results[student_name][clo_key][assessment_type] += (
+                                (score.marks_obtained / question.marks) * distributed_weight
+                            )
 
-        # Final CLO Calculation with Assessment Contribution
-        final_clo_data = []
-        for clo_id, clo_info in clo_lookup.items():
-            total_clo_marks = sum(clo_info["assessmentTypeContribution"].values())
+        # # **Convert CLO contribution to percentage**
+        # for clo_key, clo_data in clo_results.items():
+        #     total_contribution = sum(clo_data["assessmentTypeContribution"].values())
+        #     if total_contribution > 0:
+        #         for key in clo_data["assessmentTypeContribution"]:
+        #             clo_data["assessmentTypeContribution"][key] = (
+        #                 clo_data["assessmentTypeContribution"][key] / total_contribution
+        #             ) * 100
 
-            clo_info["assessmentTypeContributionPercentage"] = {
-                key: round((value / total_clo_marks) * 100, 2) if total_clo_marks > 0 else 0
-                for key, value in clo_info["assessmentTypeContribution"].items()
-            }
-
-            clo_info["totalMarks"] = round(total_clo_marks, 2)
-            del clo_info["assessmentTypeContribution"]
-            final_clo_data.append(clo_info)
-
+        # **Prepare Final JSON Response**
         response_data = {
             "status": "success",
             "message": "OBE result data fetched successfully.",
             "data": {
-                "sectionInfo": {
-                    "sectionId": section.id,
-                    "courseId": course.id,
-                    "courseName": course.name,
-                    "faculty": {
-                        "facultyId": faculty.id if faculty else None,
-                        "facultyName": faculty.get_full_name() if faculty else "Not Assigned"
-                    }
-                },
-                "CLOs": final_clo_data
+                "CLOs": list(clo_results.values()),  # CLOs are now properly structured
+                "students": student_results  # Each student now matches the CLO hierarchy
             }
         }
 
