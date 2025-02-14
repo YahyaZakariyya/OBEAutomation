@@ -26,6 +26,7 @@ class MarksAPI(APIView):
         score_data = StudentQuestionScoreSerializer(scores, many=True).data
 
         return Response({
+            'assessment_title': assessment.title,
             'questions': question_data,
             'students': student_data,
             'scores': score_data
@@ -39,12 +40,20 @@ class MarksAPI(APIView):
         for score_item in data:
             student_id = score_item['student_id']
             question_id = score_item['question_id']
-            marks_obtained = score_item['marks_obtained']
+            
+            # ✅ Convert marks_obtained to float to handle decimal values
+            try:
+                marks_obtained = float(score_item['marks_obtained']) if score_item['marks_obtained'] else 0.0
+            except ValueError:
+                return Response({
+                    "status": "error",
+                    "message": f"Invalid marks format for student {student_id}, question {question_id}"
+                }, status=400)
 
             try:
                 question = Question.objects.get(id=question_id)
 
-                # Validate marks
+                # ✅ Validate Marks (No Negative & Not More Than Max Marks)
                 if marks_obtained < 0:
                     errors.append({
                         "student_id": student_id,
@@ -58,12 +67,12 @@ class MarksAPI(APIView):
                         "error": f"Marks cannot exceed {question.marks}."
                     })
 
-                # If no errors, update the database
                 if not errors:
-                    StudentQuestionScore.objects.filter(
+                    StudentQuestionScore.objects.update_or_create(
                         student_id=student_id,
-                        question_id=question_id
-                    ).update(marks_obtained=marks_obtained)
+                        question_id=question_id,
+                        defaults={"marks_obtained": marks_obtained}
+                    )
 
             except Question.DoesNotExist:
                 errors.append({
@@ -71,8 +80,3 @@ class MarksAPI(APIView):
                     "question_id": question_id,
                     "error": "Question not found."
                 })
-
-        if errors:
-            return Response({"status": "error", "errors": errors}, status=400)
-
-        return Response({"status": "success"}, status=200)
