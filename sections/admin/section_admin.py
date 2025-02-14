@@ -59,7 +59,8 @@ class DynamicSidebarMixin:
     def get_app_list(self, request, app_label=None):
         app_list = super().get_app_list(request, app_label)
 
-        url = ''
+        standard_result_url = ''
+        obe_result_url = ''
         
         # Dynamically update the sidebar name for "Sections" based on user role
         for app in app_list:
@@ -67,29 +68,38 @@ class DynamicSidebarMixin:
                 if model['object_name'] == 'Section':  # Match the model class name
                     if hasattr(request.user, 'role'):
                         if request.user.role == 'faculty':
-                            url = '/results/faculty-result-view/'
+                            standard_result_url = '/results/faculty-result-view/'
+                            obe_result_url = 'results/faculty-obe-result-view/'
                             model['name'] = _("Assigned Courses")
                         elif request.user.role == 'student':
-                            url = '/results/student-result-view/'
+                            standard_result_url = '/results/student-result-view/'
+                            # obe_result_url = 'results/faculty-obe-result-view/'
                             model['name'] = _("Enrolled Courses")
                         else:
                             model['name'] = _("Sections")
 
         # Add a custom menu item for "Custom Reports"
-        custom_menu_item = {
+        custom_app_items = [{
             'name': 'Standard Results',         # Menu item name
             'app_label': 'general_result',      # Required for Jazzmin
             'object_name': 'GeneralResult',   # Identifier
-            'admin_url': url,  # Target URL
+            'admin_url': standard_result_url,  # Target URL
             'perms': {'view': True},          # Permission check
             'icon': 'fas fa-chart-line'       # Optional: FontAwesome icon
-        }
+        }, {
+            'name': 'OBE Result',         # Menu item name
+            'app_label': 'obe_result',      # Required for Jazzmin
+            'object_name': 'OBEResult',   # Identifier
+            'admin_url': obe_result_url,  # Target URL
+            'perms': {'view': True},          # Permission check
+            'icon': 'fas fa-chart-line'       # Optional: FontAwesome icon
+        },]
 
         # Add this menu under a "Custom Tools" app
         custom_app = {
             'name': 'Result App',       # App name in the sidebar
             'app_label': 'Results',  # Required
-            'models': [custom_menu_item]  # List of menu items
+            'models': custom_app_items  # List of menu items
         }
         # In get_app_list or similar logic:
         app_list.append(custom_app)
