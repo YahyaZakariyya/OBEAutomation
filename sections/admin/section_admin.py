@@ -69,7 +69,7 @@ class DynamicSidebarMixin:
                     if hasattr(request.user, 'role'):
                         if request.user.role == 'faculty':
                             standard_result_url = '/results/faculty-result-view/'
-                            obe_result_url = 'results/faculty-obe-result-view/'
+                            obe_result_url = '/results/faculty-obe-result-view/'
                             model['name'] = _("Assigned Courses")
                         elif request.user.role == 'student':
                             standard_result_url = '/results/student-result-view/'

@@ -42,6 +42,7 @@ class FacultyCLOAttainmentAPI(APIView):
         # **Data Structure Initialization**
         clo_results = {
             clo_mapping[clo.id]: {
+                "clo_id": "CLO" + str(clo.CLO),
                 "title": clo.heading,
                 "weightage": clo.weightage,
                 "totalMarks": 0,
@@ -51,9 +52,16 @@ class FacultyCLOAttainmentAPI(APIView):
         }
 
         student_results = {
-            student.get_full_name(): {
-                clo_key: {}  # Only add assessments if they contribute
-                for clo_key in clo_mapping.values()
+            student.username: {  # Use SAP ID as the key
+                "student_details": {
+                    "first_name": student.first_name,
+                    "last_name": student.last_name,
+                    "email": student.email
+                },
+                "clo_results": {
+                    clo_key: {}  # Only add assessments if they contribute
+                    for clo_key in clo_mapping.values()
+                }
             }
             for student in students
         }
@@ -85,15 +93,19 @@ class FacultyCLOAttainmentAPI(APIView):
                     if assessment_type not in clo_results[clo_key]["assessmentTypeContribution"]:
                         clo_results[clo_key]["assessmentTypeContribution"][assessment_type] = 0
                     clo_results[clo_key]["assessmentTypeContribution"][assessment_type] += distributed_weight
-                    print('Assessment Type:',assessment_type, clo_results[clo_key]["assessmentTypeContribution"][assessment_type])
 
                     # Add student results, but only for relevant CLOs
                     for student in students:
-                        student_name = student.get_full_name()
+                        student_id = student.username  # Use SAP ID instead of full name
                         score = student_scores.filter(student=student, question=question).first()
+                        
                         if score:
-                            student_results[student_name][clo_key].setdefault(assessment_type, 0)
-                            student_results[student_name][clo_key][assessment_type] += (
+                            # Ensure CLO key exists inside "clo_results"
+                            student_results[student_id]["clo_results"].setdefault(clo_key, {})
+                            
+                            # Add assessment type scores inside "clo_results"
+                            student_results[student_id]["clo_results"][clo_key].setdefault(assessment_type, 0)
+                            student_results[student_id]["clo_results"][clo_key][assessment_type] += (
                                 (score.marks_obtained / question.marks) * distributed_weight
                             )
 
