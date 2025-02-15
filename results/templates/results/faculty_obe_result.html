@@ -14,14 +14,7 @@
     ></select-section>
 
     <div class="table-responsive">
-        <clo-table :clos="clos" :assessments="assessmentTypes"></clo-table>
-    </div>
-
-    <div class="table-responsive mt-4">
-        <student-table
-            :students="students"
-            :assessments="assessmentTypes"
-        ></student-table>
+        <grand-clo-table :clos="clos" :students="students"></grand-clo-table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
