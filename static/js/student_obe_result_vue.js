@@ -3,66 +3,68 @@ import { SelectSection } from "./components/select_section.js";
 const StudentCLOTable = {
     props: ["clos", "student"],
     template: `
-        <div class="table-striped table-responsive" style="white-space: nowrap">
-            <table class="table table-bordered text-center">
-                <!-- Table Head -->
-                <thead class="text-white thead-dark">
-                    <!-- CLO Headers -->
-                    <tr>
-                        <th rowspan="4">SAP ID</th>
-                        <th rowspan="4">Student Name</th>
-                        <th v-for="clo in clos" :colspan="getCLOColSpan(clo)" class="align-middle">
-                            {{ clo.clo_id }} ({{ clo.weightage }}%)
-                        </th>
-                        <!-- <th rowspan="4" class="align-middle">Total CLOs Weightage</th> -->
-                    </tr>
-                    <!-- Assessment Types Headers -->
-                    <tr>
-                        <template v-for="clo in clos">
-                            <th v-for="assessment in getAssessments(clo)" :colspan="2">
-                                {{ assessment.charAt(0).toUpperCase() + assessment.slice(1) }}
+        <div class="card shadow-sm p-4 mb-4">
+            <div class="table-responsive" style="white-space: nowrap">
+                <table class="table table-bordered text-center">
+                    <!-- Table Head -->
+                    <thead class="text-white thead-dark">
+                        <!-- CLO Headers -->
+                        <tr>
+                            <th rowspan="4">SAP ID</th>
+                            <th rowspan="4">Student Name</th>
+                            <th v-for="clo in clos" :colspan="getCLOColSpan(clo)" class="align-middle">
+                                {{ clo.clo_id }} ({{ clo.weightage }}%)
                             </th>
-                            <th rowspan="2" colspan="2" class="align-middle">Total</th>
-                        </template>
-                    </tr>
-                    <!-- Marks, Percentage & Attainment Headers -->
-                    <tr>
-                        <template v-for="clo in clos">
-                            <template v-for="assessment in getAssessments(clo)">
-                                <th>Marks</th>
-                                <th>Percentage %</th>
+                            <!-- <th rowspan="4" class="align-middle">Total CLOs Weightage</th> -->
+                        </tr>
+                        <!-- Assessment Types Headers -->
+                        <tr>
+                            <template v-for="clo in clos">
+                                <th v-for="assessment in getAssessments(clo)" :colspan="2">
+                                    {{ assessment.charAt(0).toUpperCase() + assessment.slice(1) }}
+                                </th>
+                                <th rowspan="2" colspan="2" class="align-middle">Total</th>
                             </template>
-                        </template>
-                    </tr>
-                    <!-- Total Available Marks Row -->
-                    <tr class="font-weight-bold bg-secondary text-white">
-                        <template v-for="clo in clos">
-                            <template v-for="assessment in getAssessments(clo)">
-                                <th>{{ getTotalAvailableMarks(clo, assessment) }}</th>
-                                <th>{{ getAssessmentWeightPercentage(clo, assessment) }}%</th>
+                        </tr>
+                        <!-- Marks, Percentage & Attainment Headers -->
+                        <tr>
+                            <template v-for="clo in clos">
+                                <template v-for="assessment in getAssessments(clo)">
+                                    <th>Marks</th>
+                                    <th>Percentage %</th>
+                                </template>
                             </template>
-                            <th class="bg-warning">{{ clo.totalMarks.toFixed(2) }}</th>
-                            <th class="bg-warning">{{ 100 }}%</th>
-                        </template>
-                    </tr>
-                </thead>
-                <!-- Table Body -->
-                <tbody>
-                    <tr>
-                        <td class="font-weight-bold">{{ student.student_details.sap_id }}</td>
-                        <td class="font-weight-bold">{{ student.student_details.first_name }} {{ student.student_details.last_name }}</td>
-                        <template v-for="clo in clos">
-                            <template v-for="assessment in getAssessments(clo)">
-                                <td>{{ getObtainedScore(student, clo.clo_id, assessment) }}</td>
-                                <td>{{ getStudentPercentage(student, clo, assessment) }}%</td>
+                        </tr>
+                        <!-- Total Available Marks Row -->
+                        <tr class="font-weight-bold bg-secondary text-white">
+                            <template v-for="clo in clos">
+                                <template v-for="assessment in getAssessments(clo)">
+                                    <th>{{ getTotalAvailableMarks(clo, assessment) }}</th>
+                                    <th>{{ getAssessmentWeightPercentage(clo, assessment) }}%</th>
+                                </template>
+                                <th class="bg-warning">{{ clo.totalMarks.toFixed(2) }}</th>
+                                <th class="bg-warning">{{ 100 }}%</th>
                             </template>
-                            <td class="font-weight-bold">{{ getTotalCLOScore(student, clo.clo_id) }}</td>
-                            <td class="bg-success font-weight-bold">{{ getAttainmentPercentage(student, clo) }}%</td>
-                        </template>
-                        <!-- <td class="bg-primary text-white font-weight-bold">{{ getTotalWeightage(student) }}</td> -->
-                    </tr>
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <!-- Table Body -->
+                    <tbody>
+                        <tr>
+                            <td class="font-weight-bold">{{ student.student_details.sap_id }}</td>
+                            <td class="font-weight-bold">{{ student.student_details.first_name }} {{ student.student_details.last_name }}</td>
+                            <template v-for="clo in clos">
+                                <template v-for="assessment in getAssessments(clo)">
+                                    <td>{{ getObtainedScore(student, clo.clo_id, assessment) }}</td>
+                                    <td>{{ getStudentPercentage(student, clo, assessment) }}%</td>
+                                </template>
+                                <td class="font-weight-bold">{{ getTotalCLOScore(student, clo.clo_id) }}</td>
+                                <td class="bg-success font-weight-bold">{{ getAttainmentPercentage(student, clo) }}%</td>
+                            </template>
+                            <!-- <td class="bg-primary text-white font-weight-bold">{{ getTotalWeightage(student) }}</td> -->
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     `,
     methods: {

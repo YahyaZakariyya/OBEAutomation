@@ -1,19 +1,15 @@
 {% extends 'admin/base_site.html' %} {% load static %} {% block content %}
 <div id="app" class="container mt-4">
-    <!-- Title -->
-    <div class="row mb-4">
-        <div class="col text-center">
-            <h2 class="fw-bold">Outcome Based Result</h2>
-        </div>
+    <div class="card shadow-sm p-4">
+        <h2 class="fw-bold text-center">Outcome Based Result</h2>
+        <!-- Section Selection Component -->
+        <select-section
+            :sections="sections"
+            v-model="selectedSection"
+        ></select-section>
     </div>
 
-    <!-- Select Section Component -->
-    <select-section
-        :sections="sections"
-        v-model="selectedSection"
-    ></select-section>
-
-    <div class="table-responsive">
+    <div v-if="selectedSection" class="table-responsive">
         <grand-clo-table :clos="clos" :students="students"></grand-clo-table>
     </div>
 

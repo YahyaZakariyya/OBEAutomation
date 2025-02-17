@@ -1,19 +1,17 @@
 {% extends 'admin/base_site.html' %} {% load static %} {% block content %}
 <div id="app" class="container mt-4">
-    <h2 class="fw-bold text-center">Student OBE Result</h2>
-
-    <!-- Section Selection Component -->
-    <select-section
-        :sections="sections"
-        v-model="selectedSection"
-    ></select-section>
+    <div class="card shadow-sm p-4">
+        <h2 class="fw-bold text-center">Outcome Based Result</h2>
+        <!-- Section Selection Component -->
+        <select-section
+            :sections="sections"
+            v-model="selectedSection"
+        ></select-section>
+    </div>
 
     <!-- Student CLO Table -->
     <div v-if="dataLoaded" class="table-responsive mt-4">
         <student-clo-table :clos="clos" :student="student"></student-clo-table>
-    </div>
-    <div v-else class="text-center text-muted mt-4">
-        <p>Loading data...</p>
     </div>
 </div>
 

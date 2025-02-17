@@ -3,7 +3,6 @@ from django.utils.html import format_html
 from django.urls import reverse
 from programs.models import Program
 from users.models import CustomUser
-from django.template.response import TemplateResponse
 
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ('program_abbreviation', 'program_incharge', 'program_type', 'view_courses', 'view_plos')
@@ -31,14 +30,14 @@ class ProgramAdmin(admin.ModelAdmin):
         url = reverse('admin:courses_course_changelist') + f"?programs__id__exact={obj.id}"
         return format_html('<a class="btn btn-sm btn-dark" href="{}">Courses</a>', url)
     
-    view_courses.short_description = "View Courses"
+    view_courses.short_description = "Program Courses"
     view_courses.allow_tags = True  # Ensures the HTML is rendered correctly
 
     def view_plos(self, obj):
         url = reverse('admin:outcomes_programlearningoutcome_changelist') + f"?programs__id__exact={obj.id}"
         return format_html('<a class="btn btn-sm btn-dark" href="{}">PLOs</a>', url)
     
-    view_plos.short_description = "View PLOs"
+    view_plos.short_description = "PLOs"
     view_plos.allow_tags = True  # Ensures the HTML is rendered correctly
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

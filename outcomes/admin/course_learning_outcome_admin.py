@@ -4,6 +4,7 @@ from outcomes.models import CourseLearningOutcome
 class CourseLearningOutcomeAdmin(admin.ModelAdmin):
     list_display = ('course','custom_number', 'heading', 'description', 'weightage')
     list_filter = ('course',)
+    show_full_result_count = False
 
     def custom_number(self, obj):
         return f"CLO {obj.CLO}"

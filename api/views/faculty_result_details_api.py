@@ -45,6 +45,8 @@ class FacultyResultDetailsAPI(APIView):
 
         # Pre-compute data for all assessment types
         for assessment_type, weight in breakdown.items():
+            if weight == 0:
+                continue
             assessments = section.assessments.filter(type=assessment_type)
             total_type_marks = 0
             total_type_weightage = 0  # To sum up the weightage of all assessments of this type
