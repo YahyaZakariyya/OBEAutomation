@@ -14,7 +14,7 @@ const GrandCLOTable = {
                         <th v-for="clo in clos" :colspan="getCLOColSpan(clo)" class="align-middle">
                             {{ clo.clo_id }} ({{ clo.weightage }}%)
                         </th>
-                        <th rowspan="4" class="align-middle">Total CLOs Weightage</th>
+                        <!-- <th rowspan="4" class="align-middle">Total CLOs Weightage</th> -->
                     </tr>
                     <!-- Assessment Types Headers -->
                     <tr>
@@ -59,7 +59,7 @@ const GrandCLOTable = {
                             <td class="font-weight-bold">{{ getTotalCLOScore(student, clo.clo_id) }}</td>
                             <td class="font-weight-bold">{{ getAttainmentPercentage(student, clo) }}%</td>
                         </template>
-                        <td class="bg-primary text-white font-weight-bold">{{ getTotalWeightage(student) }}</td>
+                        <!-- <td class="bg-primary text-white font-weight-bold">{{ getTotalWeightage(student) }}</td> -->
                     </tr>
                     <!-- Overall Attainment Row -->
                     <tr class="font-weight-bold bg-light">
@@ -72,7 +72,7 @@ const GrandCLOTable = {
                             <td>-</td>
                             <td class="bg-success text-white">{{ getOverallAttainment(clo) }}%</td>
                         </template>
-                        <td>-</td>
+                        <!-- <td>-</td> -->
                     </tr>
                 </tbody>
             </table>
@@ -175,13 +175,10 @@ const app = Vue.createApp({
     methods: {
         async fetchSections() {
             try {
-                let response = await fetch('/api/sections/');
+                let response = await fetch("/api/sections/");
                 let data = await response.json();
-                this.sections = data.sections;
-                if (this.sections.length > 0) {
-                    this.selectedSection = this.sections[0].id;  // ✅ Automatically select the first section
-                    this.fetchSectionData();
-                }
+                console.log("Fetched Sections API Response:", data);
+                this.sections = data;
             } catch (error) {
                 console.error("Error fetching sections:", error);
             }
