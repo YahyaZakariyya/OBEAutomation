@@ -60,37 +60,38 @@ const SummaryTable = {
                 <table class="table table-bordered text-center">
                     <thead class="thead-light">
                         <tr>
-                            <th>Types</th>
+                            <th>Assessments</th>
                             <th>Titles</th>
-                            <th>Obt.M</th>
                             <th>Total.M</th>
-                            <th>Adjusted.M</th>
+                            <th>Obt.M</th>
                             <th>Weightage</th>
-                            <th>Completed Weightage</th>
-                            <th>Adjusted Obt.M</th>
+                            <th>Adjusted.M</th>
                             <th>Total Weightage</th>
+                            <th>Completed Weightage</th>
+                            <th>Adjusted.Total.Obt.M</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(type, idx) in assessments" :key="idx">
-                            <td v-if="type.assessments?.length" :rowspan="type.assessments.length">{{ type.type }}</td>
-                            <template v-for="(a, index) in type.assessments || []">
-                                <tr :key="index">
-                                    <td>{{ a.title }}</td>
-                                    <td>{{ a.student_obtained_marks }}</td>
+                        <template v-for="(type, idx) in assessments" :key="idx">
+                            <template v-if="type.assessments && type.assessments.length">
+                                <tr v-for="(a, index) in type.assessments" :key="index">
+                                    <td v-if="index === 0" :rowspan="type.assessments.length">{{ type.type }}</td>
+                                    <td>{{ a.title.charAt(0).toUpperCase() + a.title.slice(1) }}</td>
                                     <td>{{ a.total_marks }}</td>
-                                    <td>{{ a.adjusted_marks.toFixed(2) }}</td>
-                                    <td>{{ a.assessment_weight }}</td>
+                                    <td>{{ a.student_obtained_marks }}</td>
+                                    <td>{{ a.assessment_weight*type.allocated_weight/100 }}</td>
+                                    <td>{{ (a.adjusted_marks*(a.assessment_weight*type.allocated_weight/100)/a.assessment_weight).toFixed(2) }}</td>
+                                    <td v-if="index === 0" :rowspan="type.assessments.length">{{ type.allocated_weight }}</td>
                                     <td v-if="index === 0" :rowspan="type.assessments.length">{{ type.completion_percentage.toFixed(2) }}</td>
                                     <td v-if="index === 0" :rowspan="type.assessments.length">{{ type.adjusted_marks.toFixed(2) }}</td>
-                                    <td v-if="index === 0" :rowspan="type.assessments.length">{{ type.allocated_weight }}</td>
                                 </tr>
                             </template>
-                        </tr>
+                        </template>
                         <tr class="table-dark fw-bold">
-                            <td colspan="7">Total</td>
-                            <td class="bg-danger">{{ totalScore }}</td>
+                            <td colspan="6">Total</td>
                             <td>{{ totalWeight }}</td>
+                            <td></td>
+                            <td class="bg-danger">{{ totalScore }}</td>
                         </tr>
                     </tbody>
                 </table>
