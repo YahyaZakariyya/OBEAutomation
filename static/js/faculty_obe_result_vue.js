@@ -3,6 +3,8 @@ import { SelectSection } from "./components/select_section.js";
 const GrandCLOTable = {
     props: ["clos", "students"],
     template: `
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="mb-3">Students CLO Based Results</h5>
         <div class="table-striped table-responsive" style="white-space: nowrap">
             <table class="table table-bordered text-center">
                 <!-- Table Head -->
@@ -77,6 +79,7 @@ const GrandCLOTable = {
                 </tbody>
             </table>
         </div>
+    </div>
     `,
     methods: {
         /** Get the assessments for a given CLO */

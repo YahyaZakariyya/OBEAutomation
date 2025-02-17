@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 from django import forms
 from assessments.models import AssessmentBreakdown
 from guardian.shortcuts import get_objects_for_user
-from guardian.admin import GuardedModelAdmin
 
 # Custom form for validation in admin
 class AssessmentBreakdownForm(forms.ModelForm):
@@ -32,7 +31,7 @@ class AssessmentBreakdownForm(forms.ModelForm):
 
 # Admin configuration for AssessmentBreakdown
 @admin.register(AssessmentBreakdown)
-class AssessmentBreakdownAdmin(GuardedModelAdmin):
+class AssessmentBreakdownAdmin(admin.ModelAdmin):
     form = AssessmentBreakdownForm  # Use the custom form with validation
     list_display = ('section', 'assignment_weightage', 'quiz_weightage', 'lab_weightage', 'mid_weightage', 'final_weightage', 'project_weightage')
     list_filter = ('section',)

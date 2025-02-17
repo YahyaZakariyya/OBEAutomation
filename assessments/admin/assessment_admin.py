@@ -2,12 +2,11 @@ from django.contrib import admin
 from assessments.models import Assessment
 from sections.models import Section
 from guardian.shortcuts import get_objects_for_user
-from guardian.admin import GuardedModelAdmin
 from .question_admin import QuestionInline
 from django.utils.html import format_html
 from django.urls import reverse
 
-class AssessmentAdmin(GuardedModelAdmin):
+class AssessmentAdmin(admin.ModelAdmin):
     inlines = [QuestionInline]
     
     list_display = ['title', 'section', 'date', 'type', 'weightage', 'manage_marks_button']
