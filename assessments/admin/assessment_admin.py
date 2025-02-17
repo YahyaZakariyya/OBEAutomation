@@ -25,7 +25,8 @@ class AssessmentAdmin(GuardedModelAdmin):
                 url = reverse('edit_scores') + f'?id={obj.id}'
                 return format_html('<a class="btn btn-sm btn-primary" href="{}" target="_blank">Manage Marks</a>', url)
             else:
-                return format_html('<a href="/view-scores/?id={}" target="_blank">View Marks</a>', obj.id)
+                url = reverse('view_scores') + f'?assessment_id={obj.id}&student_id={request.user.id}'
+                return format_html('<a href="{}">View Marks</a>', url)
         return "-"  # Return a default placeholder if obj is None
 
     manage_marks_button.short_description = 'Manage/View Marks'

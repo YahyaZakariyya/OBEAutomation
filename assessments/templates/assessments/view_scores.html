@@ -1,0 +1,8 @@
+{% extends 'admin/base_site.html' %} {% load static %} {% block content %}
+<div id="app" class="container mt-4">
+    <student-score></student-score>
+</div>
+
+<script src="https://unpkg.com/vue@3.2.31/dist/vue.global.js"></script>
+<script src="{% static 'js/student_score_vue.js' %}" defer></script>
+{% endblock %}

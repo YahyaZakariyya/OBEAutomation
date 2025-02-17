@@ -26,6 +26,7 @@
     ></summary-table>
 
     <!-- Download CSV Button -->
+    {% comment %}
     <button
         v-if="majorData.length"
         @click="downloadCSV"
@@ -33,6 +34,7 @@
     >
         Download as CSV
     </button>
+    {% endcomment %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
