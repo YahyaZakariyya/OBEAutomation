@@ -1,28 +1,27 @@
 {% extends 'admin/base_site.html' %} {% load static %} {% block content %}
 <div id="app" class="container mt-4">
-    <!-- Title -->
-    <div class="row mb-4">
-        <div class="col text-center">
-            <h2 class="fw-bold">Outcome Based Result</h2>
-        </div>
-    </div>
+    <h2 class="fw-bold text-center">Student OBE Result</h2>
 
-    <!-- Select Section Component -->
+    <!-- Section Selection Component -->
     <select-section
         :sections="sections"
         v-model="selectedSection"
     ></select-section>
 
-    <!-- Student Result Table (Only One Student) -->
-    <div class="table-responsive">
+    <!-- Student CLO Table -->
+    <div v-if="dataLoaded" class="table-responsive mt-4">
         <student-clo-table :clos="clos" :student="student"></student-clo-table>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-    <script
-        type="module"
-        src="{% static 'js/student_obe_result_vue.js' %}"
-        defer
-    ></script>
+    <div v-else class="text-center text-muted mt-4">
+        <p>Loading data...</p>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script
+    type="module"
+    src="{% static 'js/student_obe_result_vue.js' %}"
+    defer
+></script>
+
 {% endblock %}
