@@ -13,5 +13,5 @@ urlpatterns = [
     # path('plos/<int:program_id>/', get_plos_by_program, name='get_plos'),
     path('clos/<int:course_id>/', get_clos_by_course, name='get_clos'),
     path('faculty/section/<int:section_id>/clo_result/', FacultyCLOAttainmentAPI.as_view(), name='faculty-clo-result'),
-    path('student/section/<int:section_id>/clo_result/<int:student_id>/', StudentCLOAttainmentAPI.as_view(), name='student-clo-result'),
+    path('student/section/<int:section_id>/clo_result/', StudentCLOAttainmentAPI.as_view(), name='student-clo-result'),
 ]

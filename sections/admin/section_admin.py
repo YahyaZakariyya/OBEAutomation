@@ -73,7 +73,7 @@ class DynamicSidebarMixin:
                             model['name'] = _("Assigned Courses")
                         elif request.user.role == 'student':
                             standard_result_url = '/results/student-result-view/'
-                            # obe_result_url = 'results/faculty-obe-result-view/'
+                            obe_result_url = '/results/student-obe-result-view/'
                             model['name'] = _("Enrolled Courses")
                         else:
                             model['name'] = _("Sections")

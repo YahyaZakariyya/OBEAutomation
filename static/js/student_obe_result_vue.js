@@ -1,7 +1,7 @@
 import { SelectSection } from "./components/select_section.js";
 
-const GrandCLOTable = {
-    props: ["clos", "students"],
+const StudentCLOTable = {
+    props: ["clos", "student"],
     template: `
         <div class="table-striped table-responsive" style="white-space: nowrap">
             <table class="table table-bordered text-center">
@@ -48,8 +48,8 @@ const GrandCLOTable = {
                 </thead>
                 <!-- Table Body -->
                 <tbody>
-                    <tr v-for="(student, sapID) in students" :key="sapID">
-                        <td>{{ sapID }}</td>
+                    <tr>
+                        <td>{{ student.sap_id }}</td>
                         <td>{{ student.student_details.first_name }} {{ student.student_details.last_name }}</td>
                         <template v-for="clo in clos">
                             <template v-for="assessment in getAssessments(clo)">
@@ -79,29 +79,23 @@ const GrandCLOTable = {
         </div>
     `,
     methods: {
-        /** Get the assessments for a given CLO */
         getAssessments(clo) {
             return Object.keys(clo.assessmentTypeContribution || {});
         },
-        /** Get the total columns spanned by a CLO */
         getCLOColSpan(clo) {
-            return (this.getAssessments(clo).length * 2) + 2; // Assessments + Total + Attainment columns
+            return (this.getAssessments(clo).length * 2) + 2;
         },
-        /** Get total available marks for each assessment */
         getTotalAvailableMarks(clo, assessment) {
             return clo.assessmentTypeContribution?.[assessment]?.toFixed(2) || "-";
         },
-        /** Get weight percentage of each assessment type within the CLO */
         getAssessmentWeightPercentage(clo, assessment) {
             let totalCLOMarks = parseFloat(clo.totalMarks) || 1;
             let assessmentMarks = parseFloat(clo.assessmentTypeContribution?.[assessment] || 0);
-            return ((assessmentMarks / totalCLOMarks) * 100).toFixed(2); // Convert to percentage
+            return ((assessmentMarks / totalCLOMarks) * 100).toFixed(2);
         },
-        /** Get obtained marks for a student under a specific CLO and assessment */
         getObtainedScore(student, cloId, assessment) {
             return student.clo_results?.[cloId]?.[assessment] ? student.clo_results[cloId][assessment].toFixed(2) : "-";
         },
-        /** Get student's percentage based on the total available marks */
         getStudentPercentage(student, clo, assessment) {
             let obtained = parseFloat(student.clo_results?.[clo.clo_id]?.[assessment] || 0);
             let totalAssessmentMarks = parseFloat(clo.assessmentTypeContribution?.[assessment] || 1);
@@ -112,7 +106,6 @@ const GrandCLOTable = {
             }
             return "-";
         },
-        /** Get total CLO score for a student */
         getTotalCLOScore(student, cloId) {
             let total = 0;
             Object.values(student.clo_results?.[cloId] || {}).forEach(value => {
@@ -120,24 +113,14 @@ const GrandCLOTable = {
             });
             return total.toFixed(2);
         },
-        /** Get attainment percentage for a student */
         getAttainmentPercentage(student, clo) {
             let studentTotal = parseFloat(this.getTotalCLOScore(student, clo.clo_id)) || 0;
             let totalCLOMarks = parseFloat(clo.totalMarks) || 1;
             return ((studentTotal / totalCLOMarks) * 100).toFixed(2);
         },
-        /** Get overall attainment percentage for a CLO */
         getOverallAttainment(clo) {
-            let totalAttainment = 0;
-            let studentCount = Object.keys(this.students).length;
-            
-            Object.values(this.students).forEach(student => {
-                totalAttainment += parseFloat(this.getAttainmentPercentage(student, clo));
-            });
-
-            return (totalAttainment / studentCount).toFixed(2);
+            return this.getAttainmentPercentage(this.student, clo);
         },
-        /** Get total weighted score for a student */
         getTotalWeightage(student) {
             let total = 0;
             Object.keys(student.clo_results || {}).forEach(cloId => {
@@ -150,7 +133,6 @@ const GrandCLOTable = {
     }
 };
 
-
 const app = Vue.createApp({
     data() {
         return {
@@ -158,12 +140,12 @@ const app = Vue.createApp({
             selectedSection: "",
             dataLoaded: false,
             clos: [],
-            students: {}
+            student: {}
         };
     },
     components: {
         "select-section": SelectSection,
-        "grand-clo-table": GrandCLOTable
+        "student-clo-table": StudentCLOTable
     },
     watch: {
         selectedSection(newSection) {
@@ -189,30 +171,19 @@ const app = Vue.createApp({
         async fetchSectionData() {
             if (!this.selectedSection) return;
 
-            let apiUrl = `/api/faculty/section/${this.selectedSection}/clo_result/`;
-
+            let apiUrl = `/api/student/section/${this.selectedSection}/clo_result/`;  // ✅ Fix API URL usage
             try {
                 let response = await fetch(apiUrl);
                 let data = await response.json();
                 if (data.status === "success") {
                     this.clos = data.data.CLOs || [];
-                    this.students = this.formatStudents(data.data.students || {});
+                    this.student = data.data.student;
                     this.dataLoaded = true;
                 }
             } catch (error) {
                 console.error("Error fetching section data:", error);
             }
         },
-        formatStudents(rawStudents) {
-            let formattedStudents = {};
-            Object.keys(rawStudents).forEach(sapID => {
-                formattedStudents[sapID] = {
-                    student_details: rawStudents[sapID].student_details,
-                    clo_results: rawStudents[sapID].clo_results
-                };
-            });
-            return formattedStudents;
-        }
     },
     mounted() {
         this.fetchSections();
