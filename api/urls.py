@@ -14,4 +14,7 @@ urlpatterns = [
     path('clos/<int:course_id>/', get_clos_by_course, name='get_clos'),
     path('faculty/section/<int:section_id>/clo_result/', FacultyCLOAttainmentAPI.as_view(), name='faculty-clo-result'),
     path('student/section/<int:section_id>/clo_result/', StudentCLOAttainmentAPI.as_view(), name='student-clo-result'),
+    path('admin_dashboard/', admin_dashboard, name='admin-dashboard'),
+    path('student_dashboard/', student_dashboard, name='student-dashboard'),
+    path('faculty_dashboard/', faculty_dashboard, name='faculty-dashboard'),
 ]
