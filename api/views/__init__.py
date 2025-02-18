@@ -8,3 +8,6 @@ from .student_clo_attainment_api import StudentCLOAttainmentAPI
 from .outcomes_api import get_plos_by_program, get_clos_by_course
 from .students_view_score_api import StudentScoreAPI
 from .student_result_view import StudentResultsView
+from .admin_dashboard import admin_dashboard
+from .student_dashboard import student_dashboard
+from .faculty_dashboard import faculty_dashboard

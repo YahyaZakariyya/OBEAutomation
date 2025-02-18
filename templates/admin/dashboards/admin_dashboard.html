@@ -1,95 +1,114 @@
-<div class="content">
+<div class="container-fluid mt-4">
+    <!-- Programs Overview -->
     <div class="row">
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Programs Overview</div>
-                <div class="card-body">
-                    <p>Total Programs: <strong>15</strong></p>
-                    <p>Active Programs: <strong>12</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Programs</a>
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-university fa-3x text-primary"></i>
+                    <div class="ml-3">
+                        <h5>Programs Overview</h5>
+                        <p id="program-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:programs_program_changelist' %}"
+                            class="text-primary"
+                            >View All Programs</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Courses Overview -->
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Courses Overview</div>
-                <div class="card-body">
-                    <p>Total Courses: <strong>50</strong></p>
-                    <p>Active Courses: <strong>45</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Courses</a>
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-book-open fa-3x text-success"></i>
+                    <div class="ml-3">
+                        <h5>Courses Overview</h5>
+                        <p id="course-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:courses_course_changelist' %}"
+                            class="text-success"
+                            >View All Courses</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Sections Overview -->
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Sections Overview</div>
-                <div class="card-body">
-                    <p>Total Sections: <strong>120</strong></p>
-                    <p>Active Sections: <strong>110</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Sections</a>
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-layer-group fa-3x text-warning"></i>
+                    <div class="ml-3">
+                        <h5>Sections Overview</h5>
+                        <p id="section-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:sections_section_changelist' %}"
+                            class="text-warning"
+                            >View All Sections</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">CLO Performance</div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="cloChart"></canvas>
-                    </div>
-                    <div class="view-more">
-                        <a href="#">Detailed CLO Reports</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Recent Activities</div>
-                <div class="card-body">
-                    <ul>
-                        <li>Added new program: AI Basics</li>
-                        <li>Updated CLO for Data Science</li>
-                        <li>Created new section: CS202-B</li>
-                    </ul>
-                    <div class="view-more">
-                        <a href="#">View All Activities</a>
-                    </div>
-                </div>
+    <!-- CLO Performance -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <h5 class="mb-3">CLO Performance</h5>
+                <a href="/clo-performance/" class="text-primary"
+                    >Detailed CLO Reports</a
+                >
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
+    <!-- User Management & System Configurations -->
+    <div class="row">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">User Management</div>
-                <div class="card-body">
-                    <p>Total Users: <strong>200</strong></p>
-                    <p>Admin Users: <strong>5</strong></p>
-                    <div class="view-more">
-                        <a href="#">View All Users</a>
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users fa-3x text-info"></i>
+                    <div class="ml-3">
+                        <h5>User Management</h5>
+                        <p id="user-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:users_customuser_changelist' %}"
+                            class="text-info"
+                            >View All Users</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">System Configurations</div>
-                <div class="card-body">
-                    <ul>
-                        <li><a href="#">Configure CLOs</a></li>
-                        <li><a href="#">Program Weightings</a></li>
-                    </ul>
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-cogs fa-3x text-danger"></i>
+                    <div class="ml-3">
+                        <h5>System Configurations</h5>
+                        <ul class="mb-1">
+                            <li>
+                                <a
+                                    href="{% url 'admin:outcomes_courselearningoutcome_changelist' %}"
+                                    class="text-danger"
+                                    >Configure CLOs</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/configurations/weightings"
+                                    class="text-danger"
+                                    >Program Weightings</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,26 +116,30 @@
 </div>
 
 <script>
-    const ctx = document.getElementById('cloChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            datasets: [{
-                label: 'CLO Attainment',
-                data: [70, 85, 75, 90, 95],
-                backgroundColor: 'rgba(47, 128, 237, 0.2)',
-                borderColor: 'rgba(47, 128, 237, 1)',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+    async function fetchDashboardData() {
+        let response = await fetch("/api/admin_dashboard/");
+        let data = await response.json();
+
+        // Update Programs Overview
+        document.getElementById(
+            "program-count"
+        ).innerHTML = `Undergraduate: ${data.programs.Undergraduate}, Graduate: ${data.programs.Graduate}, Postgraduate: ${data.programs.Postgraduate}, Total: ${data.programs.Total}`;
+
+        // Update Courses Overview
+        document.getElementById(
+            "course-count"
+        ).innerHTML = `Total Courses: ${data.courses.Total}`;
+
+        // Update Sections Overview
+        document.getElementById(
+            "section-count"
+        ).innerHTML = `In Progress: ${data.sections["In Progress"]}, Completed: ${data.sections.Completed}, Total: ${data.sections.Total}`;
+
+        // Update Users Overview
+        document.getElementById(
+            "user-count"
+        ).innerHTML = `Admins: ${data.users.Admins}, Faculty: ${data.users.Faculty}, Students: ${data.users.Students}, Total: ${data.users.Total}`;
+    }
+
+    fetchDashboardData();
 </script>

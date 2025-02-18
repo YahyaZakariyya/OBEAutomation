@@ -1,90 +1,129 @@
-<div class="content">
+<div class="container-fluid mt-4">
+    <!-- First Row: Programs & Courses -->
     <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Data Science</div>
-                <div class="card-body">
-                    <p>Grade: <strong>85%</strong></p>
-                    <p>Assessments Completed: <strong>5/5</strong></p>
-                    <div class="view-more">
-                        <a href="#">View Course Details</a>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-university fa-3x text-primary"></i>
+                    <div class="ml-3">
+                        <h5>Programs Overview</h5>
+                        <p id="program-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:programs_program_changelist' %}"
+                            class="text-primary"
+                            >View All Programs</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Web Development</div>
-                <div class="card-body">
-                    <p>Grade: <strong>78%</strong></p>
-                    <p>Assessments Completed: <strong>4/7</strong></p>
-                    <div class="view-more">
-                        <a href="#">View Course Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Course: Machine Learning</div>
-                <div class="card-body">
-                    <p>Grade: <strong>92%</strong></p>
-                    <p>Assessments Completed: <strong>3/4</strong></p>
-                    <div class="view-more">
-                        <a href="#">View Course Details</a>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-book-open fa-3x text-success"></i>
+                    <div class="ml-3">
+                        <h5>Available Courses</h5>
+                        <p id="course-count">Loading...</p>
+                        <a
+                            href="{% url 'admin:courses_course_changelist' %}"
+                            class="text-primary"
+                            >View All Courses</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="view-more mt-3">
-        <a href="#">View All Courses</a>
-    </div>
-
+    <!-- Second Row: Enrolled Courses (Centered) -->
     <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">CLO Performance Summary</div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="cloChart"></canvas>
-                    </div>
-                    <div class="view-more">
-                        <a href="/student-clo-performance">Detailed CLO Analysis</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">Resources</div>
-                <div class="card-body">
-                    <ul>
-                        <li><a href="#">Tutoring Services</a></li>
-                        <li><a href="#">FAQs</a></li>
-                        <li><a href="#">Help Desk</a></li>
-                    </ul>
-                    <div class="view-more">
-                        <a href="#">View All Resources</a>
+        <div class="col">
+            <div class="card shadow-sm p-3 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-layer-group fa-3x text-warning"></i>
+                    <div class="ml-3">
+                        <h5>Enrolled Courses</h5>
+                        <ul
+                            id="section-list"
+                            data-admin-url="{% url 'admin:sections_section_change' 0 %}"
+                        ></ul>
+
+                        <a
+                            href="{% url 'admin:sections_section_changelist' %}"
+                            class="text-primary"
+                            >View All Sections</a
+                        >
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Third Row: CLOs, PLOs -->
     <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">Upcoming Assessments</div>
-                <div class="card-body">
-                    <ul>
-                        <li>Assignment 4: Data Science - Due 12th Dec</li>
-                        <li>Project Presentation: Web Development - Due 15th Dec</li>
-                        <li>Final Exam: Machine Learning - Due 20th Dec</li>
-                    </ul>
-                    <div class="view-more">
-                        <a href="#">View All Assessments</a>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-list-alt fa-3x text-warning"></i>
+                    <div class="ml-3">
+                        <h5>Course Learning Outcomes (CLOs)</h5>
+                        <a
+                            href="{% url 'admin:outcomes_courselearningoutcome_changelist' %}"
+                            class="text-primary"
+                            >View CLOs</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-graduation-cap fa-3x text-success"></i>
+                    <div class="ml-3">
+                        <h5>Program Learning Outcomes (PLOs)</h5>
+                        <a
+                            href="{% url 'admin:outcomes_programlearningoutcome_changelist' %}"
+                            class="text-primary"
+                            >View PLOs</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fourth Row: Results -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-file-alt fa-3x text-info"></i>
+                    <div class="ml-3">
+                        <h5>Traditional Result</h5>
+                        <a
+                            href="{% url 'student_result_view' %}"
+                            class="text-primary"
+                            >View Traditional Result</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4 rounded">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-chart-line fa-3x text-success"></i>
+                    <div class="ml-3">
+                        <h5>OBE Result</h5>
+                        <a
+                            href="{% url 'student_obe_result_view' %}"
+                            class="text-primary"
+                            >View OBE Result</a
+                        >
                     </div>
                 </div>
             </div>
@@ -93,49 +132,35 @@
 </div>
 
 <script>
-    const ctx = document.getElementById('cloChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Data Science', 'Web Development', 'Machine Learning'],
-            datasets: [{
-                label: 'CLO Attainment',
-                data: [85, 78, 92],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 99, 132, 0.5)',
-                    'rgba(75, 192, 192, 0.5)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `CLO Attainment: ${context.raw}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 10
-                    }
-                }
-            }
-        }
-    });
+    async function fetchStudentDashboard() {
+        let response = await fetch("/api/student_dashboard/");
+        let data = await response.json();
+
+        // Update Programs
+        document.getElementById(
+            "program-count"
+        ).innerHTML = `Available Programs: ${data.programs.length}`;
+
+        // Update Courses
+        document.getElementById(
+            "course-count"
+        ).innerHTML = `Available Courses: ${data.courses}`;
+
+        // Update Sections
+        let sectionList = document.getElementById("section-list");
+        sectionList.innerHTML = "";
+        data.sections.forEach((section) => {
+            let li = document.createElement("li");
+
+            // Get base admin URL from the data attribute and replace '0' with section.id
+            let adminUrl = document
+                .getElementById("section-list")
+                .dataset.adminUrl.replace("0", section.id);
+
+            li.innerHTML = `<a href="${adminUrl}" class="text-dark">${section.course__name} - Sem ${section.semester} Sec ${section.section}</a>`;
+            sectionList.appendChild(li);
+        });
+    }
+
+    fetchStudentDashboard();
 </script>
