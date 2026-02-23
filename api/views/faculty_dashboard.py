@@ -4,14 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from programs.models import Program
 from courses.models import Course
 from sections.models import Section
+from api.permissions import IsFacultyUser
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsFacultyUser])
 def faculty_dashboard(request):
-    # Get the logged-in student
+    # Get the logged-in faculty
     faculty = request.user
-    if faculty.role != 'faculty':
-        return Response({"error": "Unauthorized"}, status=403)
 
     # Fetch all available Programs (students can view all)
     programs = list(Program.objects.values("program_abbreviation", "program_title"))
