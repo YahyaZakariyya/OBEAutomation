@@ -3,3 +3,10 @@ __pycache__/
 .vscode
 venv/
 .venv
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Env
+.env
