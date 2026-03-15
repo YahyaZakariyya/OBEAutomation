@@ -219,6 +219,12 @@
                                     <p>{% trans 'Dashboard' %}</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{% url 'home' %}" class="nav-link">
+                                    <i class="nav-icon fas fa-home"></i>
+                                    <p>{% trans 'Home Page' %}</p>
+                                </a>
+                            </li>
 
                             {% if jazzmin_settings.navigation_expanded %}
                                 {% for app in side_menu_list %}
