@@ -1,0 +1,1242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBE Automation — Outcome-Based Education System</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2A3F54;
+            --primary-light: #3a5470;
+            --primary-dark: #1a2b3c;
+            --accent: #F7C942;
+            --accent-dark: #d4a82e;
+            --text: #34495E;
+            --text-light: #7F8C8D;
+            --bg: #F9FAFB;
+            --card-bg: #ffffff;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar-home {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease;
+        }
+        .navbar-home.scrolled {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            padding: 0.65rem 2rem;
+        }
+        .navbar-brand-home {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        .navbar-brand-home img { height: 36px; width: auto; }
+        .brand-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.02em;
+        }
+        .brand-name span { color: var(--accent); }
+        .nav-cta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .btn-nav-login {
+            background: var(--accent);
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding: 0.5rem 1.4rem;
+            border-radius: 50px;
+            border: none;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .btn-nav-login:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(247, 201, 66, 0.4);
+            color: var(--primary-dark);
+        }
+        .btn-nav-home {
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .btn-nav-home:hover { color: var(--accent); }
+
+        /* ── HERO ── */
+        #hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        /* Animated grid overlay */
+        #hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(247,201,66,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247,201,66,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(60px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 7rem 0 5rem;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(247,201,66,0.15);
+            border: 1px solid rgba(247,201,66,0.3);
+            color: var(--accent);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            animation: fadeInDown 0.8s ease both;
+        }
+        .hero-title {
+            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.15;
+            margin-bottom: 1.25rem;
+            animation: fadeInUp 0.9s ease 0.15s both;
+        }
+        .hero-title .accent { color: var(--accent); }
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(255,255,255,0.72);
+            max-width: 540px;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.9s ease 0.3s both;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            animation: fadeInUp 0.9s ease 0.45s both;
+        }
+        .btn-hero-primary {
+            background: var(--accent);
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding: 0.85rem 2rem;
+            border-radius: 50px;
+            border: none;
+            text-decoration: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+            cursor: pointer;
+        }
+        .btn-hero-primary:hover {
+            background: var(--accent-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(247,201,66,0.45);
+            color: var(--primary-dark);
+        }
+        .btn-hero-outline {
+            background: transparent;
+            color: var(--white);
+            font-weight: 600;
+            padding: 0.85rem 2rem;
+            border-radius: 50px;
+            border: 2px solid rgba(255,255,255,0.3);
+            text-decoration: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: border-color 0.25s, background 0.25s, transform 0.25s;
+        }
+        .btn-hero-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        /* floating shapes */
+        .hero-shapes { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.07;
+            background: var(--accent);
+        }
+        .shape-1 { width: 400px; height: 400px; right: -100px; top: -80px; animation: float1 8s ease-in-out infinite; }
+        .shape-2 { width: 250px; height: 250px; right: 200px; bottom: 80px; animation: float2 10s ease-in-out infinite; }
+        .shape-3 { width: 150px; height: 150px; left: 60px; bottom: 120px; animation: float1 7s ease-in-out infinite reverse; }
+        @keyframes float1 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(8deg); } }
+        @keyframes float2 { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(20px) rotate(-5deg); } }
+
+        /* hero right visual */
+        .hero-visual {
+            animation: fadeInRight 1s ease 0.5s both;
+        }
+        .hero-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+        .hero-card-title {
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+        .flow-mini {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .flow-node {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .flow-arrow { color: var(--accent); font-size: 0.9rem; }
+        .metric-row { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .metric-item { flex: 1; text-align: center; }
+        .metric-val { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+        .metric-lbl { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+
+        /* scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            animation: scrollBounce 2.5s ease-in-out infinite;
+        }
+        @keyframes scrollBounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+        /* ── STATS BAR ── */
+        #stats {
+            background: var(--primary-dark);
+            padding: 2.5rem 0;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-number {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.3rem;
+        }
+
+        /* ── SECTIONS SHARED ── */
+        section { padding: 6rem 0; }
+        .section-tag {
+            display: inline-block;
+            background: rgba(42,63,84,0.08);
+            color: var(--primary);
+            padding: 0.3rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            font-weight: 800;
+            color: var(--primary-dark);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        .section-title .accent { color: var(--accent-dark); }
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            line-height: 1.75;
+            max-width: 640px;
+        }
+        .divider {
+            width: 60px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 4px;
+            margin: 1.25rem 0;
+        }
+
+        /* ── ABOUT ── */
+        #about { background: var(--white); }
+        .about-icon-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(42,63,84,0.08);
+            background: var(--bg);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            margin-bottom: 1rem;
+        }
+        .about-icon-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(42,63,84,0.1);
+            border-color: var(--accent);
+        }
+        .about-icon {
+            width: 52px; height: 52px; min-width: 52px;
+            border-radius: 14px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent);
+            font-size: 1.3rem;
+        }
+        .about-icon-box h5 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.3rem; }
+        .about-icon-box p { font-size: 0.88rem; color: var(--text-light); line-height: 1.6; margin: 0; }
+
+        /* ── FLOW ── */
+        #flow { background: var(--bg); }
+        .flow-steps {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            gap: 0;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+        .flow-step {
+            flex: 0 0 auto;
+            width: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .flow-step-icon {
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: default;
+        }
+        .flow-step:hover .flow-step-icon {
+            transform: scale(1.12);
+            box-shadow: 0 8px 24px rgba(42,63,84,0.3);
+        }
+        .flow-step-label {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-align: center;
+            line-height: 1.3;
+        }
+        .flow-step-sub {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 0.3rem;
+            line-height: 1.4;
+        }
+        .flow-connector {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 3rem;
+            min-width: 24px;
+        }
+        .flow-connector::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            position: relative;
+        }
+        .flow-arrow-icon { color: var(--accent); font-size: 1.2rem; }
+
+        /* mobile flow stacked */
+        @media (max-width: 768px) {
+            .flow-steps { flex-direction: column; align-items: center; overflow-x: visible; }
+            .flow-step { width: 100%; flex-direction: row; gap: 1rem; align-items: flex-start; }
+            .flow-connector { display: none; }
+            .flow-step-label { text-align: left; }
+            .flow-step-sub { text-align: left; }
+        }
+
+        /* ── CONCEPTS ── */
+        #concepts { background: var(--white); }
+        .concept-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(42,63,84,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        .concept-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.35s ease;
+        }
+        .concept-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(42,63,84,0.12); border-color: transparent; }
+        .concept-card:hover::before { transform: scaleX(1); }
+        .concept-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: rgba(42,63,84,0.06);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+            transition: background 0.3s, color 0.3s;
+        }
+        .concept-card:hover .concept-icon { background: var(--primary); color: var(--accent); }
+        .concept-card h4 { font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.6rem; }
+        .concept-card p { font-size: 0.88rem; color: var(--text-light); line-height: 1.65; margin: 0; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(247,201,66,0.15);
+            color: var(--accent-dark);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-top: 1rem;
+        }
+
+        /* ── WEIGHTAGE ── */
+        #weightage { background: var(--primary-dark); overflow: hidden; position: relative; }
+        #weightage::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: rgba(247,201,66,0.04);
+            right: -200px; top: -150px;
+        }
+        .weightage-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        .weightage-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(247,201,66,0.3);
+            transform: translateY(-4px);
+        }
+        .weightage-card .wicon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .weightage-card h4 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.6rem; }
+        .weightage-card p { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.65; margin: 0; }
+        .constraint-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(247,201,66,0.12);
+            border: 1px solid rgba(247,201,66,0.25);
+            color: var(--accent);
+            padding: 0.3rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+
+        /* ── USERS ── */
+        #users-section { background: var(--bg); }
+        .user-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(42,63,84,0.08);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .user-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(42,63,84,0.15); }
+        .user-avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent);
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+        .user-card h3 { font-size: 1.2rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.5rem; }
+        .user-card .role-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .user-card p { font-size: 0.9rem; color: var(--text-light); line-height: 1.65; }
+        .user-feature-list { list-style: none; padding: 0; margin: 1.25rem 0 0; text-align: left; }
+        .user-feature-list li {
+            font-size: 0.85rem;
+            color: var(--text);
+            padding: 0.4rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(42,63,84,0.06);
+        }
+        .user-feature-list li:last-child { border-bottom: none; }
+        .user-feature-list li i { color: var(--accent-dark); font-size: 0.8rem; }
+
+        /* ── CTA ── */
+        #cta {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 7rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #cta::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(247,201,66,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247,201,66,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .cta-content { position: relative; z-index: 2; }
+        .cta-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; color: var(--white); margin-bottom: 1rem; }
+        .cta-desc { font-size: 1.05rem; color: rgba(255,255,255,0.7); max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--primary-dark);
+            padding: 3rem 0 2rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .footer-brand { font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+        .footer-brand span { color: var(--accent); }
+        .footer-desc { font-size: 0.85rem; line-height: 1.65; max-width: 300px; }
+        .footer-links h6 { color: rgba(255,255,255,0.9); font-weight: 700; margin-bottom: 1rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .footer-links a { display: block; color: rgba(255,255,255,0.55); font-size: 0.85rem; text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--accent); }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); margin-top: 2.5rem; padding-top: 1.5rem; font-size: 0.8rem; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp   { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInRight{ from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+        .reveal-delay-5 { transition-delay: 0.5s; }
+
+        /* pulse dot */
+        .pulse-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(247,201,66,0.4); } 50% { box-shadow: 0 0 0 8px rgba(247,201,66,0); } }
+
+        /* custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--primary-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    </style>
+</head>
+
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar-home" id="mainNav">
+    <a href="/" class="navbar-brand-home">
+        <img src="{% static 'images/logo.png' %}" alt="OBE Logo" onerror="this.style.display='none'">
+        <span class="brand-name">OBE <span>Automation</span></span>
+    </a>
+    <div class="nav-cta">
+        <a href="#flow" class="btn-nav-home d-none d-md-inline">How It Works</a>
+        <a href="#concepts" class="btn-nav-home d-none d-md-inline">Concepts</a>
+        {% if user.is_authenticated %}
+            <a href="/dashboard/" class="btn-nav-login">
+                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+            </a>
+        {% else %}
+            <a href="/dashboard/login/" class="btn-nav-login">
+                <i class="fas fa-sign-in-alt me-1"></i> Login
+            </a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+    <div class="hero-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container hero-content">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    Outcome-Based Education Platform
+                </div>
+                <h1 class="hero-title">
+                    Measure What <br><span class="accent">Actually Matters</span>
+                </h1>
+                <p class="hero-subtitle">
+                    A complete OBE automation system — mapping programs to outcomes, tracking attainment with precision, and surfacing insights that drive academic excellence.
+                </p>
+                <div class="hero-actions">
+                    {% if user.is_authenticated %}
+                        <a href="/dashboard/" class="btn-hero-primary">
+                            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                        </a>
+                    {% else %}
+                        <a href="/dashboard/login/" class="btn-hero-primary">
+                            <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="#about" class="btn-hero-outline">
+                        <i class="fas fa-book-open"></i> Learn More
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6 hero-visual d-none d-lg-block">
+                <div class="hero-card">
+                    <div class="hero-card-title">OBE Data Flow</div>
+                    <div class="flow-mini">
+                        <span class="flow-node">Program</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-node">PLOs</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-node">Course</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-node">CLOs</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-node">Mapping</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-node">Results</span>
+                    </div>
+                </div>
+                <div class="hero-card">
+                    <div class="hero-card-title">System Scale</div>
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <div class="metric-val" data-count="5">5</div>
+                            <div class="metric-lbl">Programs</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-val" data-count="55">55</div>
+                            <div class="metric-lbl">Courses</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-val" data-count="247">247</div>
+                            <div class="metric-lbl">CLOs Mapped</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-val" data-count="54">54</div>
+                            <div class="metric-lbl">PLOs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-indicator">
+        <span>Scroll to explore</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- ── STATS BAR ── -->
+<section id="stats">
+    <div class="container">
+        <div class="row">
+            <div class="col-6 col-md-3 stat-item reveal">
+                <div class="stat-number" data-target="5">0</div>
+                <div class="stat-label">Academic Programs</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item reveal reveal-delay-1">
+                <div class="stat-number" data-target="55">0</div>
+                <div class="stat-label">Courses</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item reveal reveal-delay-2">
+                <div class="stat-number" data-target="54">0</div>
+                <div class="stat-label">Program Learning Outcomes</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item reveal reveal-delay-3">
+                <div class="stat-number" data-target="247">0</div>
+                <div class="stat-label">CLO-to-PLO Mappings</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section id="about">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5 reveal">
+                <span class="section-tag">About OBE</span>
+                <h2 class="section-title">Education Designed Around <span class="accent">Outcomes</span></h2>
+                <div class="divider"></div>
+                <p class="section-desc">
+                    Outcome-Based Education shifts the focus from <em>what is taught</em> to <em>what students achieve</em>. Every course, assessment, and curriculum decision is anchored to measurable learning outcomes — ensuring graduates meet the competencies that matter.
+                </p>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-3">
+                    <div class="col-12 reveal reveal-delay-1">
+                        <div class="about-icon-box">
+                            <div class="about-icon"><i class="fas fa-bullseye"></i></div>
+                            <div>
+                                <h5>Outcome-Driven Design</h5>
+                                <p>Programs define Program Learning Outcomes (PLOs), and every course CLO maps directly to one PLO — creating a traceable chain from daily classwork to graduate attributes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 reveal reveal-delay-2">
+                        <div class="about-icon-box">
+                            <div class="about-icon"><i class="fas fa-percentage"></i></div>
+                            <div>
+                                <h5>Weighted Attainment Tracking</h5>
+                                <p>CLOs and PLOs carry explicit weightages (summing to 100%). Assessment questions are tagged to CLOs, and student marks translate directly into attainment percentages.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 reveal reveal-delay-3">
+                        <div class="about-icon-box">
+                            <div class="about-icon"><i class="fas fa-chart-line"></i></div>
+                            <div>
+                                <h5>Continuous Quality Improvement</h5>
+                                <p>Real-time dashboards surface attainment gaps for both faculty and administrators — powering data-driven decisions to improve curricula each semester.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FLOW ── -->
+<section id="flow">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-tag">System Flow</span>
+            <h2 class="section-title">How Everything <span class="accent">Connects</span></h2>
+            <div class="divider mx-auto"></div>
+            <p class="section-desc mx-auto text-center">
+                From defining a program to computing OBE results — every step is structured, weighted, and validated.
+            </p>
+        </div>
+
+        <!-- Desktop horizontal flow -->
+        <div class="flow-steps d-none d-md-flex reveal reveal-delay-1">
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-university"></i></div>
+                <div class="flow-step-label">Program</div>
+                <div class="flow-step-sub">BSCS, BSIT, BBA…<br>with incharge</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="flow-step-label">PLOs</div>
+                <div class="flow-step-sub">1–15 per program<br>Σ weightage = 100%</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-book"></i></div>
+                <div class="flow-step-label">Courses</div>
+                <div class="flow-step-sub">Linked to programs<br>≤ 4 credit hours</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-list-check"></i></div>
+                <div class="flow-step-label">CLOs</div>
+                <div class="flow-step-sub">1–15 per course<br>Σ weightage ≤ 100%</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-link"></i></div>
+                <div class="flow-step-label">PLO-CLO Map</div>
+                <div class="flow-step-sub">1 CLO → 1 PLO<br>globally enforced</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-th-list"></i></div>
+                <div class="flow-step-label">Sections</div>
+                <div class="flow-step-sub">Semester instances<br>with enrolled students</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="flow-step-label">Assessments</div>
+                <div class="flow-step-sub">Quiz, Mid, Final<br>Questions → CLOs</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-star"></i></div>
+                <div class="flow-step-label">Marks & Scores</div>
+                <div class="flow-step-sub">Per-student scores<br>on each question</div>
+            </div>
+            <div class="flow-connector"><i class="flow-arrow-icon fas fa-chevron-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-step-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="flow-step-label">OBE Results</div>
+                <div class="flow-step-sub">CLO &amp; PLO attainment<br>percentages</div>
+            </div>
+        </div>
+
+        <!-- Mobile stacked flow -->
+        <div class="d-md-none">
+            <div class="row g-3">
+                {% for step in flow_steps_mobile %}
+                <div class="col-12 reveal" style="transition-delay: {{ forloop.counter0 }}00ms;">
+                    <div class="about-icon-box">
+                        <div class="about-icon" style="min-width:52px;"><i class="{{ step.icon }}"></i></div>
+                        <div>
+                            <h5>{{ step.label }}</h5>
+                            <p>{{ step.desc }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- Inline fallback for mobile since we're not passing context -->
+            <div class="row g-3" id="mobile-flow-fallback">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CONCEPTS ── -->
+<section id="concepts">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-tag">Key Concepts</span>
+            <h2 class="section-title">The Building Blocks of <span class="accent">OBE</span></h2>
+            <div class="divider mx-auto"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-university"></i></div>
+                    <h4>Programs</h4>
+                    <p>Academic programs (e.g. BSCS, BSIT, MBA) are the top-level entity. Each program has a unique abbreviation, type (UG/PG), and an assigned incharge faculty.</p>
+                    <span class="concept-tag">e.g. BSCS · BSIT · BBA</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <h4>Program Learning Outcomes (PLOs)</h4>
+                    <p>Each program defines 1–15 PLOs — high-level graduate attributes. Every PLO carries a weightage, and the total across a program must equal 100%.</p>
+                    <span class="concept-tag">Σ PLO weightages = 100%</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-3">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-book"></i></div>
+                    <h4>Courses</h4>
+                    <p>Courses belong to one or more programs. Each course has a code, name, and credit hours (max 4). Shared courses like GEN101 can span multiple programs simultaneously.</p>
+                    <span class="concept-tag">max 4 credit hours</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-list-check"></i></div>
+                    <h4>Course Learning Outcomes (CLOs)</h4>
+                    <p>Each course defines up to 15 CLOs. CLO weightages per course must not exceed 100% cumulatively. The system enforces this at save time.</p>
+                    <span class="concept-tag">Σ CLO weightages ≤ 100%</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-link"></i></div>
+                    <h4>PLO-CLO Mapping</h4>
+                    <p>Every CLO maps to exactly one PLO — globally per course. This strict rule ensures attainment can be cleanly rolled up from CLO scores to PLO attainment percentages.</p>
+                    <span class="concept-tag">1 CLO → 1 PLO (enforced)</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 reveal reveal-delay-3">
+                <div class="concept-card">
+                    <div class="concept-icon"><i class="fas fa-file-alt"></i></div>
+                    <h4>Assessments &amp; Scores</h4>
+                    <p>Assessments (Quiz, Midterm, Final…) contain questions, each tagged to a CLO. Student marks on questions feed the attainment calculation pipeline.</p>
+                    <span class="concept-tag">Questions → CLOs → PLOs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── WEIGHTAGE ── -->
+<section id="weightage">
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-6 reveal">
+                <span class="section-tag" style="background:rgba(247,201,66,0.15);color:var(--accent);">Weightage System</span>
+                <h2 class="section-title" style="color:white;">How Percentages &amp; <span style="color:var(--accent);">Weightages Work</span></h2>
+                <div class="divider"></div>
+                <p class="section-desc" style="color:rgba(255,255,255,0.65);">
+                    The OBE system uses a layered weightage model — from individual assessment marks all the way to program-level attainment. Every number is transparent, traceable, and constrained.
+                </p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 reveal reveal-delay-1">
+                <div class="weightage-card">
+                    <div class="wicon"><i class="fas fa-percent"></i></div>
+                    <h4>PLO Weightages</h4>
+                    <p>Each PLO in a program carries a percentage that reflects its importance in the curriculum. All PLO weightages for a program sum to exactly 100%.</p>
+                    <div class="constraint-pill"><i class="fas fa-lock"></i> Sum = 100%</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal reveal-delay-2">
+                <div class="weightage-card">
+                    <div class="wicon"><i class="fas fa-balance-scale"></i></div>
+                    <h4>CLO Weightages</h4>
+                    <p>CLO weightages per course reflect the relative importance of each outcome. The cumulative total across all CLOs in a course must not exceed 100%.</p>
+                    <div class="constraint-pill"><i class="fas fa-lock"></i> Sum ≤ 100%</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal reveal-delay-3">
+                <div class="weightage-card">
+                    <div class="wicon"><i class="fas fa-sitemap"></i></div>
+                    <h4>Mapping Weightages</h4>
+                    <p>When a CLO maps to a PLO, the mapping itself carries a weightage. The sum of mapping weightages per (course, PLO) pair must not exceed 100%.</p>
+                    <div class="constraint-pill"><i class="fas fa-lock"></i> Per-PLO ≤ 100%</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal reveal-delay-4">
+                <div class="weightage-card">
+                    <div class="wicon"><i class="fas fa-chart-pie"></i></div>
+                    <h4>OBE Attainment</h4>
+                    <p>Student marks on assessment questions → CLO scores → weighted CLO attainment → PLO attainment. The system computes this pipeline automatically per section.</p>
+                    <div class="constraint-pill"><i class="fas fa-bolt"></i> Auto-computed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── USERS ── -->
+<section id="users-section">
+    <div class="container">
+        <div class="text-center mb-5 reveal">
+            <span class="section-tag">Roles</span>
+            <h2 class="section-title">Built for Every <span class="accent">Stakeholder</span></h2>
+            <div class="divider mx-auto"></div>
+            <p class="section-desc mx-auto">Three distinct roles — each with a tailored dashboard and focused set of capabilities.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4 reveal reveal-delay-1">
+                <div class="user-card">
+                    <div class="user-avatar"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Administrator</h3>
+                    <span class="role-badge">Admin</span>
+                    <p>Full system control — manages programs, courses, users, PLOs, CLOs, and mappings. Oversees the entire OBE data architecture.</p>
+                    <ul class="user-feature-list">
+                        <li><i class="fas fa-check"></i> Manage programs &amp; PLOs</li>
+                        <li><i class="fas fa-check"></i> Assign courses &amp; faculty</li>
+                        <li><i class="fas fa-check"></i> Configure CLO-PLO mappings</li>
+                        <li><i class="fas fa-check"></i> System-wide analytics</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 reveal reveal-delay-2">
+                <div class="user-card">
+                    <div class="user-avatar"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h3>Faculty</h3>
+                    <span class="role-badge">Faculty</span>
+                    <p>Manages sections, creates assessments, enters student marks, and views CLO attainment for their own courses and sections.</p>
+                    <ul class="user-feature-list">
+                        <li><i class="fas fa-check"></i> Create &amp; manage assessments</li>
+                        <li><i class="fas fa-check"></i> Enter student marks</li>
+                        <li><i class="fas fa-check"></i> View CLO attainment reports</li>
+                        <li><i class="fas fa-check"></i> OBE result analysis</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 reveal reveal-delay-3">
+                <div class="user-card">
+                    <div class="user-avatar"><i class="fas fa-user-graduate"></i></div>
+                    <h3>Student</h3>
+                    <span class="role-badge">Student</span>
+                    <p>Views personal assessment scores, CLO attainment, and overall OBE results for enrolled sections — complete transparency into academic performance.</p>
+                    <ul class="user-feature-list">
+                        <li><i class="fas fa-check"></i> View assessment scores</li>
+                        <li><i class="fas fa-check"></i> Personal CLO attainment</li>
+                        <li><i class="fas fa-check"></i> OBE result breakdown</li>
+                        <li><i class="fas fa-check"></i> Section-wise performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ── -->
+<section id="cta">
+    <div class="container cta-content">
+        <div class="reveal">
+            <h2 class="cta-title">Ready to Experience <br>Outcome-Based Education?</h2>
+            <p class="cta-desc">Log in to your dashboard and start exploring programs, outcomes, and attainment data — all in one place.</p>
+            {% if user.is_authenticated %}
+                <a href="/dashboard/" class="btn-hero-primary" style="display:inline-flex;">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="/dashboard/login/" class="btn-hero-primary" style="display:inline-flex;">
+                    <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="footer-brand">OBE <span>Automation</span></div>
+                <p class="footer-desc">
+                    A structured platform for Outcome-Based Education — connecting programs, courses, learning outcomes, assessments, and results in a single traceable system.
+                </p>
+            </div>
+            <div class="col-6 col-lg-2 footer-links">
+                <h6>System</h6>
+                <a href="#about">About OBE</a>
+                <a href="#flow">How It Works</a>
+                <a href="#concepts">Key Concepts</a>
+                <a href="#weightage">Weightages</a>
+            </div>
+            <div class="col-6 col-lg-2 footer-links">
+                <h6>Roles</h6>
+                <a href="#users-section">Administrator</a>
+                <a href="#users-section">Faculty</a>
+                <a href="#users-section">Student</a>
+            </div>
+            <div class="col-lg-4 footer-links">
+                <h6>Dashboard Access</h6>
+                {% if user.is_authenticated %}
+                    <a href="/dashboard/">Go to Dashboard</a>
+                {% else %}
+                    <a href="/dashboard/login/">Login</a>
+                {% endif %}
+                <a href="/dashboard/password_reset/">Reset Password</a>
+            </div>
+        </div>
+        <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>&copy; {% now "Y" %} OBE Automation. All rights reserved.</span>
+            <span>Outcome-Based Education Platform</span>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function() {
+    // ── Navbar scroll effect ──
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+
+    // ── Animated counters ──
+    function animateCounter(el, target, duration = 1800) {
+        let start = 0;
+        const step = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += step;
+            if (start >= target) { el.textContent = target; clearInterval(timer); return; }
+            el.textContent = Math.floor(start);
+        }, 16);
+    }
+
+    const statObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const el = e.target.querySelector('[data-target]');
+                if (el) animateCounter(el, parseInt(el.dataset.target));
+                statObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-item').forEach(el => statObserver.observe(el));
+
+    // ── Mobile flow fallback (if Django context not passed) ──
+    const mobileFlow = document.getElementById('mobile-flow-fallback');
+    if (mobileFlow && mobileFlow.children.length === 0) {
+        const steps = [
+            { icon: 'fas fa-university', label: 'Program', desc: 'Top-level academic program (BSCS, BSIT, etc.) with an assigned incharge faculty.' },
+            { icon: 'fas fa-graduation-cap', label: 'PLOs', desc: '1–15 Program Learning Outcomes per program. All weightages sum to 100%.' },
+            { icon: 'fas fa-book', label: 'Courses', desc: 'Courses linked to programs with credit hours ≤ 4. Shared courses span multiple programs.' },
+            { icon: 'fas fa-list-check', label: 'CLOs', desc: '1–15 Course Learning Outcomes per course. Cumulative weightage ≤ 100%.' },
+            { icon: 'fas fa-link', label: 'PLO-CLO Mapping', desc: 'Each CLO maps to exactly one PLO globally. Mapping weightages per (course, PLO) ≤ 100%.' },
+            { icon: 'fas fa-th-list', label: 'Sections', desc: 'Semester-based instances of a course with enrolled students.' },
+            { icon: 'fas fa-file-alt', label: 'Assessments', desc: 'Quiz, Midterm, Final — with questions tagged to specific CLOs.' },
+            { icon: 'fas fa-star', label: 'Marks & Scores', desc: 'Per-student marks on each question, feeding the attainment pipeline.' },
+            { icon: 'fas fa-chart-bar', label: 'OBE Results', desc: 'Computed CLO and PLO attainment percentages per student per section.' },
+        ];
+        steps.forEach((s, i) => {
+            mobileFlow.innerHTML += `
+            <div class="col-12 reveal" style="transition-delay:${i * 80}ms;">
+                <div class="about-icon-box">
+                    <div class="about-icon" style="min-width:52px;"><i class="${s.icon}"></i></div>
+                    <div><h5>${s.label}</h5><p>${s.desc}</p></div>
+                </div>
+            </div>`;
+        });
+        // re-observe new elements
+        mobileFlow.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+
+    // ── Smooth anchor scroll (offset for fixed navbar) ──
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
+            if (!target) return;
+            e.preventDefault();
+            const offset = 80;
+            window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+        });
+    });
+})();
+</script>
+
+</body>
+</html>
